@@ -1,0 +1,150 @@
+import { useState } from 'react'
+import { CheckCircle2, Download, Loader2, ShieldCheck } from 'lucide-react'
+import { useColagemStore } from '../../store/useColagemStore'
+import { formatoPorId, ROTULO_DESTINO, ROTULO_PLATAFORMA } from '../../data/formatos'
+import { layoutPorId } from '../../data/layouts'
+import { layoutEfetivo } from '../../lib/layoutEfetivo'
+import { exportarColagem, type TipoArquivo } from '../../lib/exportarColagem'
+import { TelaColagem } from '../editor/TelaColagem'
+import { Botao } from '../ui/Botao'
+
+function formatarBytes(bytes: number) {
+  return bytes > 1_048_576
+    ? `${(bytes / 1_048_576).toFixed(1)} MB`
+    : `${Math.round(bytes / 1024)} KB`
+}
+
+export function Etapa6Exportar() {
+  const formato = formatoPorId(useColagemStore((s) => s.formatoId))
+  const layoutBase = layoutPorId(useColagemStore((s) => s.layoutId))
+  const gap = useColagemStore((s) => s.gap)
+  const margem = useColagemStore((s) => s.margem)
+  const corFundo = useColagemStore((s) => s.corFundo)
+  const slots = useColagemStore((s) => s.slots)
+  const imagens = useColagemStore((s) => s.imagens)
+  const plataforma = useColagemStore((s) => s.plataforma)
+  const destino = useColagemStore((s) => s.destino)
+
+  const [ocupado, setOcupado] = useState<TipoArquivo[] | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
+  const [gerados, setGerados] = useState<{ nome: string; bytes: number }[]>([])
+
+  if (!formato || !layoutBase || !plataforma || !destino) return null
+
+  async function exportar(tipos: TipoArquivo[]) {
+    setOcupado(tipos)
+    setErro(null)
+    try {
+      const resultado = await exportarColagem(
+        {
+          formato: formato!,
+          layout: layoutEfetivo(layoutBase!, gap, margem),
+          corFundo,
+          slots,
+          imagens,
+        },
+        tipos,
+      )
+      setGerados(resultado.map((r) => ({ nome: r.nome, bytes: r.bytes })))
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : 'Falha inesperada ao exportar.')
+    } finally {
+      setOcupado(null)
+    }
+  }
+
+  const vazios = slots.filter((s) => !s.imagemId).length
+
+  return (
+    <div className="mx-auto flex w-full max-w-5xl gap-10">
+      <div className="flex flex-1 items-start justify-center">
+        <TelaColagem larguraMax={420} alturaMax={520} interativo={false} mostrarZonaSegura={false} />
+      </div>
+
+      <div className="w-80 shrink-0">
+        <h1 className="text-2xl font-semibold">Exportar</h1>
+        <p className="mt-1 text-sm text-neutral-400">
+          A imagem é redesenhada num canvas na resolução exata do formato — não é uma captura de
+          tela.
+        </p>
+
+        <dl className="mt-6 space-y-2 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 text-sm">
+          {[
+            ['Destino', `${ROTULO_PLATAFORMA[plataforma]} · ${ROTULO_DESTINO[destino]}`],
+            ['Proporção', formato.proporcao],
+            ['Resolução', `${formato.largura} × ${formato.altura} px`],
+            ['Fundo', corFundo === '#FFFFFF' ? 'Branco' : 'Preto'],
+            ['Layout', layoutBase.nome],
+          ].map(([rotulo, valor]) => (
+            <div key={rotulo} className="flex justify-between gap-4">
+              <dt className="text-neutral-500">{rotulo}</dt>
+              <dd className="text-right text-neutral-200">{valor}</dd>
+            </div>
+          ))}
+        </dl>
+
+        {vazios > 0 && (
+          <p className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+            {vazios} {vazios === 1 ? 'slot está vazio' : 'slots estão vazios'} e vão sair com a cor
+            de fundo. Volte à montagem se quiser preencher.
+          </p>
+        )}
+
+        <div className="mt-6 space-y-2">
+          <Botao
+            variante="primario"
+            className="w-full"
+            disabled={!!ocupado}
+            onClick={() => exportar(['png'])}
+          >
+            {ocupado?.[0] === 'png' && ocupado.length === 1 ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Download size={15} />
+            )}
+            Baixar PNG (sem perdas)
+          </Botao>
+
+          <Botao
+            variante="secundario"
+            className="w-full"
+            disabled={!!ocupado}
+            onClick={() => exportar(['jpg'])}
+          >
+            <Download size={15} /> Baixar JPG (qualidade 95%)
+          </Botao>
+
+          <Botao
+            variante="fantasma"
+            className="w-full"
+            disabled={!!ocupado}
+            onClick={() => exportar(['png', 'jpg'])}
+          >
+            Baixar os dois
+          </Botao>
+        </div>
+
+        {erro && <p className="mt-4 text-sm text-red-400">{erro}</p>}
+
+        {gerados.length > 0 && !ocupado && (
+          <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-200">
+            {gerados.map((g) => (
+              <p key={g.nome} className="flex items-start gap-1.5">
+                <CheckCircle2 size={13} className="mt-0.5 shrink-0" />
+                <span className="break-all">
+                  {g.nome} · {formatarBytes(g.bytes)}
+                </span>
+              </p>
+            ))}
+          </div>
+        )}
+
+        <p className="mt-6 flex items-start gap-2 text-xs text-neutral-500">
+          <ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-500" />
+          O arquivo é gerado no seu navegador e salvo direto na pasta de downloads. Nenhuma imagem
+          trafega pela rede.
+        </p>
+      </div>
+    </div>
+  )
+}
