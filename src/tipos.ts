@@ -79,6 +79,21 @@ export interface EstadoSlot {
   offsetY: number
 }
 
+/**
+ * Uma lâmina é uma colagem: layout + preenchimento + espaçamento. Várias
+ * lâminas convivem no mesmo documento (carrossel, álbum) e compartilham o
+ * formato, a cor de fundo e a bandeja de fotos.
+ */
+export interface Lamina {
+  id: string
+  layoutId: string
+  slots: EstadoSlot[]
+  /** Espaçamento entre slots, em px na base de largura 1080. */
+  gap: number
+  /** Margem externa, em px na base de largura 1080. */
+  margem: number
+}
+
 export interface Retangulo {
   x: number
   y: number

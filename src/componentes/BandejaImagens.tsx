@@ -53,7 +53,7 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
 
 export function BandejaImagens() {
   const imagens = useColagemStore((s) => s.imagens)
-  const slots = useColagemStore((s) => s.slots)
+  const laminas = useColagemStore((s) => s.laminas)
   const adicionarImagens = useColagemStore((s) => s.adicionarImagens)
   const [carregando, setCarregando] = useState(false)
 
@@ -75,7 +75,8 @@ export function BandejaImagens() {
     noClick: true,
   })
 
-  const usadas = new Set(slots.map((s) => s.imagemId).filter(Boolean))
+  // "em uso" vale para o documento todo: a foto pode estar em qualquer lâmina.
+  const usadas = new Set(laminas.flatMap((l) => l.slots.map((s) => s.imagemId)).filter(Boolean))
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">

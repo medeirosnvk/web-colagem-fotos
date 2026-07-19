@@ -11,9 +11,10 @@ import {
 import { RotateCcw, Redo2, Scissors, Undo2 } from 'lucide-react'
 import { BandejaImagens } from './componentes/BandejaImagens'
 import { BotaoExportar } from './componentes/BotaoExportar'
+import { PainelLaminas } from './componentes/PainelLaminas'
 import { AreaColagem } from './componentes/AreaColagem'
 import { PainelLateral } from './componentes/paineis/PainelLateral'
-import { useColagemStore } from './store/useColagemStore'
+import { laminaAtiva, useColagemStore } from './store/useColagemStore'
 
 export default function App() {
   const atribuirImagem = useColagemStore((s) => s.atribuirImagem)
@@ -56,9 +57,9 @@ export default function App() {
     const dados = e.active.data.current
     if (dados?.tipo === 'imagem') setArrastando(dados.imagemId as string)
     if (dados?.tipo === 'slot') {
-      const slot = useColagemStore
-        .getState()
-        .slots.find((s) => s.slotId === (dados.slotId as string))
+      const slot = laminaAtiva(useColagemStore.getState()).slots.find(
+        (s) => s.slotId === (dados.slotId as string),
+      )
       setArrastando(slot?.imagemId ?? null)
     }
   }
@@ -125,6 +126,7 @@ export default function App() {
 
         <div className="flex min-h-0 flex-1">
           <BandejaImagens />
+          <PainelLaminas />
           <AreaColagem />
           <PainelLateral />
         </div>

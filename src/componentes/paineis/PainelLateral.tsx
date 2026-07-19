@@ -1,17 +1,17 @@
 import { useState, type ReactNode } from 'react'
-import { Crop, Download, LayoutGrid, SlidersHorizontal } from 'lucide-react'
+import { Crop, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import { AbaFormato } from './AbaFormato'
 import { AbaLayout } from './AbaLayout'
 import { AbaAjuste } from './AbaAjuste'
-import { AbaExportar } from './AbaExportar'
 
-type Aba = 'formato' | 'layout' | 'ajuste' | 'exportar'
+// A exportação não é uma aba: mora nos controles do topo, disponível o tempo
+// todo, sem tirar o usuário de onde ele está.
+type Aba = 'formato' | 'layout' | 'ajuste'
 
 const ABAS: { id: Aba; rotulo: string; Icone: typeof Crop }[] = [
   { id: 'formato', rotulo: 'Formato', Icone: Crop },
   { id: 'layout', rotulo: 'Layout', Icone: LayoutGrid },
   { id: 'ajuste', rotulo: 'Ajustes', Icone: SlidersHorizontal },
-  { id: 'exportar', rotulo: 'Exportar', Icone: Download },
 ]
 
 /** Cabeçalho de bloco dentro de uma aba. */
@@ -31,7 +31,7 @@ export function PainelLateral() {
 
   return (
     <aside className="flex w-80 shrink-0 flex-col border-l border-neutral-800 bg-neutral-950">
-      <nav className="grid grid-cols-4 border-b border-neutral-800">
+      <nav className="grid grid-cols-3 border-b border-neutral-800">
         {ABAS.map(({ id, rotulo, Icone }) => (
           <button
             key={id}
@@ -54,7 +54,6 @@ export function PainelLateral() {
         {aba === 'formato' && <AbaFormato />}
         {aba === 'layout' && <AbaLayout />}
         {aba === 'ajuste' && <AbaAjuste />}
-        {aba === 'exportar' && <AbaExportar />}
       </div>
     </aside>
   )

@@ -1,38 +1,46 @@
-import { useColagemStore } from '../../store/useColagemStore'
+import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId, ZONA_SEGURA_PX } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
 import { retanguloDoSlot } from '../../lib/cover'
 import { SlotEditor } from './SlotEditor'
+import type { Lamina } from '../../tipos'
 
 /**
  * Desenha a colagem na tela usando exatamente a mesma geometria da exportação
  * (retanguloDoSlot + retanguloDaImagem), apenas multiplicada por `escala`.
  * É isso que garante que o resultado exportado bata com o editor.
+ *
+ * Sem `lamina`, desenha a que está em edição. Passando uma, desenha aquela —
+ * é assim que o painel de lâminas mostra miniaturas de verdade, com a mesma
+ * geometria da tela grande.
  */
 export function TelaColagem({
   larguraMax,
   alturaMax,
   interativo = true,
   mostrarZonaSegura = true,
+  lamina,
 }: {
   larguraMax: number
   alturaMax: number
   interativo?: boolean
   mostrarZonaSegura?: boolean
+  lamina?: Lamina
 }) {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
-  const layoutBase = layoutPorId(useColagemStore((s) => s.layoutId))
-  const gap = useColagemStore((s) => s.gap)
-  const margem = useColagemStore((s) => s.margem)
+  const ativa = useColagemStore(laminaAtiva)
   const corFundo = useColagemStore((s) => s.corFundo)
-  const slots = useColagemStore((s) => s.slots)
   const imagens = useColagemStore((s) => s.imagens)
   const destinoWizard = useColagemStore((s) => s.destino)
 
-  if (!formato || !layoutBase) return null
+  const alvo = lamina ?? ativa
+  const layoutBase = layoutPorId(alvo?.layoutId ?? null)
 
-  const layout = layoutEfetivo(layoutBase, gap, margem)
+  if (!formato || !layoutBase || !alvo) return null
+
+  const slots = alvo.slots
+  const layout = layoutEfetivo(layoutBase, alvo.gap, alvo.margem)
   const escala = Math.min(larguraMax / formato.largura, alturaMax / formato.altura)
 
   const temZonaSegura =

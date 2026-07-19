@@ -1,14 +1,12 @@
 import { Eraser, Maximize2, MousePointer2, RotateCcw, Wand2 } from 'lucide-react'
-import { useColagemStore } from '../../store/useColagemStore'
+import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { Botao } from '../ui/Botao'
 import { Secao } from './PainelLateral'
 
 export function AbaAjuste() {
-  const slots = useColagemStore((s) => s.slots)
+  const lamina = useColagemStore(laminaAtiva)
   const slotSelecionado = useColagemStore((s) => s.slotSelecionado)
   const permitirReduzir = useColagemStore((s) => s.permitirReduzir)
-  const gap = useColagemStore((s) => s.gap)
-  const margem = useColagemStore((s) => s.margem)
   const temImagens = useColagemStore((s) => s.imagens.length > 0)
   const ajustarSlot = useColagemStore((s) => s.ajustarSlot)
   const redefinirSlot = useColagemStore((s) => s.redefinirSlot)
@@ -17,6 +15,7 @@ export function AbaAjuste() {
   const alternarPermitirReduzir = useColagemStore((s) => s.alternarPermitirReduzir)
   const definirEspacamento = useColagemStore((s) => s.definirEspacamento)
 
+  const { slots, gap, margem } = lamina
   const slot = slots.find((s) => s.slotId === slotSelecionado)
   const indice = slots.findIndex((s) => s.slotId === slotSelecionado) + 1
   const minimo = permitirReduzir ? 0.3 : 1

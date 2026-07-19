@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CorFundo, Destino, EstadoSlot, Imagem, Plataforma } from '../tipos'
+import type { CorFundo, Destino, EstadoSlot, Imagem, Lamina, Plataforma } from '../tipos'
 import { formatoPorId, formatosDe } from '../data/formatos'
 import { layoutPorId, layoutsDe } from '../data/layouts'
 import { clamp } from '../lib/cover'
@@ -12,7 +12,11 @@ const JANELA_FUSAO_MS = 700
 
 /**
  * O que o desfazer/refazer restaura. É o "documento": tudo que muda a colagem.
- * Seleção de slot e o próprio histórico ficam de fora — são estado de tela.
+ * Lâmina ativa, seleção de slot e o próprio histórico ficam de fora — são
+ * estado de tela.
+ *
+ * Formato, cor de fundo e bandeja de fotos são do documento inteiro; layout,
+ * preenchimento e espaçamento são de cada lâmina.
  */
 interface Documento {
   imagens: Imagem[]
@@ -20,14 +24,12 @@ interface Documento {
   destino: Destino
   corFundo: CorFundo
   formatoId: string
-  layoutId: string
-  slots: EstadoSlot[]
-  gap: number
-  margem: number
+  laminas: Lamina[]
   permitirReduzir: boolean
 }
 
 interface EstadoColagem extends Documento {
+  laminaAtivaId: string
   slotSelecionado: string | null
   passado: Documento[]
   futuro: Documento[]
@@ -43,6 +45,12 @@ interface EstadoColagem extends Documento {
   definirDestino: (destino: Destino) => void
   definirCorFundo: (cor: CorFundo) => void
   definirFormato: (formatoId: string) => void
+
+  adicionarLamina: () => void
+  duplicarLamina: (id: string) => void
+  removerLamina: (id: string) => void
+  selecionarLamina: (id: string) => void
+
   definirLayout: (layoutId: string) => void
   definirEspacamento: (gap: number, margem: number) => void
 
@@ -56,6 +64,11 @@ interface EstadoColagem extends Documento {
   preencherAutomaticamente: () => void
   esvaziarSlots: () => void
   alternarPermitirReduzir: () => void
+}
+
+/** A lâmina em edição. Selector: componentes que a usam re-renderizam ao trocar. */
+export function laminaAtiva(s: EstadoColagem): Lamina {
+  return s.laminas.find((l) => l.id === s.laminaAtivaId) ?? s.laminas[0]
 }
 
 /**
@@ -85,13 +98,13 @@ function documento(s: EstadoColagem): Documento {
     destino: s.destino,
     corFundo: s.corFundo,
     formatoId: s.formatoId,
-    layoutId: s.layoutId,
-    slots: s.slots,
-    gap: s.gap,
-    margem: s.margem,
+    laminas: s.laminas,
     permitirReduzir: s.permitirReduzir,
   }
 }
+
+let sequencia = 0
+const novoId = () => `lamina-${++sequencia}`
 
 function slotsVazios(layoutId: string): EstadoSlot[] {
   const layout = layoutPorId(layoutId)
@@ -99,17 +112,28 @@ function slotsVazios(layoutId: string): EstadoSlot[] {
   return layout.slots.map((s) => ({ slotId: s.id, escala: 1, offsetX: 0, offsetY: 0 }))
 }
 
+function novaLamina(layoutId: string): Lamina {
+  const layout = layoutPorId(layoutId)
+  return {
+    id: novoId(),
+    layoutId,
+    slots: slotsVazios(layoutId),
+    gap: layout?.gap ?? 12,
+    margem: layout?.margem ?? 0,
+  }
+}
+
 /**
- * Troca o layout preservando as imagens já posicionadas, na ordem. Cada layout
- * traz o próprio espaçamento: grades pedem gap, layouts livres já embutem o
- * respiro nas coordenadas.
+ * Troca o layout de uma lâmina preservando as imagens já posicionadas, na
+ * ordem. Cada layout traz o próprio espaçamento: grades pedem gap, layouts
+ * livres já embutem o respiro nas coordenadas.
  */
-function trocarLayout(s: Documento, layoutId: string): Partial<Documento> {
+function migrarLayout(lamina: Lamina, layoutId: string): Partial<Lamina> {
   const layout = layoutPorId(layoutId)
   if (!layout) return {}
 
   const novos = slotsVazios(layoutId)
-  const usadas = s.slots.filter((x) => x.imagemId)
+  const usadas = lamina.slots.filter((x) => x.imagemId)
   novos.forEach((novo, i) => {
     const antiga = usadas[i]
     if (antiga) {
@@ -123,14 +147,31 @@ function trocarLayout(s: Documento, layoutId: string): Partial<Documento> {
   return { layoutId, slots: novos, gap: layout.gap, margem: layout.margem }
 }
 
-/** Troca o formato; se o layout atual não serve para a nova proporção, adota o primeiro que serve. */
+/**
+ * Troca o formato. Como o formato vale para o documento todo, cada lâmina cujo
+ * layout não serve para a nova proporção migra para o primeiro que serve.
+ */
 function trocarFormato(s: Documento, formatoId: string): Partial<Documento> {
   const formato = formatoPorId(formatoId)
   if (!formato) return {}
 
   const validos = layoutsDe(formato.proporcao)
-  if (validos.some((l) => l.id === s.layoutId)) return { formatoId }
-  return { formatoId, ...trocarLayout(s, validos[0].id) }
+  const laminas = s.laminas.map((l) =>
+    validos.some((v) => v.id === l.layoutId) ? l : { ...l, ...migrarLayout(l, validos[0].id) },
+  )
+  return { formatoId, laminas }
+}
+
+/** Aplica um patch só na lâmina em edição. */
+function naLaminaAtiva(
+  s: EstadoColagem,
+  fn: (l: Lamina) => Partial<Lamina> | null,
+): Partial<Documento> | null {
+  const atual = laminaAtiva(s)
+  if (!atual) return null
+  const patch = fn(atual)
+  if (!patch) return null
+  return { laminas: s.laminas.map((l) => (l.id === atual.id ? { ...l, ...patch } : l)) }
 }
 
 function documentoInicial(): Documento {
@@ -144,17 +185,18 @@ function documentoInicial(): Documento {
     destino: 'feed',
     corFundo: '#FFFFFF',
     formatoId: formato.id,
-    layoutId: layout.id,
-    slots: slotsVazios(layout.id),
-    gap: layout.gap,
-    margem: layout.margem,
+    laminas: [novaLamina(layout.id)],
     permitirReduzir: false,
   }
 }
 
-/** Mantém a seleção só se o slot ainda existir no documento restaurado. */
-function selecaoValida(doc: Documento, slotId: string | null): string | null {
-  return doc.slots.some((s) => s.slotId === slotId) ? slotId : null
+/** Mantém a lâmina/seleção só se ainda existirem no documento restaurado. */
+function ajustarFoco(doc: Documento, laminaId: string, slotId: string | null) {
+  const lamina = doc.laminas.find((l) => l.id === laminaId) ?? doc.laminas[0]
+  return {
+    laminaAtivaId: lamina.id,
+    slotSelecionado: lamina.slots.some((s) => s.slotId === slotId) ? slotId : null,
+  }
 }
 
 export const useColagemStore = create<EstadoColagem>((set, get) => {
@@ -167,7 +209,9 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
    * viram um passo só — senão o desfazer andaria de pixel em pixel.
    */
   function editar(
-    fn: (s: EstadoColagem) => (Partial<Documento> & { slotSelecionado?: string | null }) | null,
+    fn: (
+      s: EstadoColagem,
+    ) => (Partial<Documento> & { slotSelecionado?: string | null; laminaAtivaId?: string }) | null,
     tag?: string,
   ) {
     set((s) => {
@@ -179,17 +223,18 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
       ultimaTag = tag ?? null
       ultimoEm = agora
 
-      const passado = funde
-        ? s.passado
-        : [...s.passado, documento(s)].slice(-LIMITE_HISTORICO)
+      const passado = funde ? s.passado : [...s.passado, documento(s)].slice(-LIMITE_HISTORICO)
 
       return { ...patch, passado, futuro: [] }
     })
     coletarLixo(get())
   }
 
+  const inicial = documentoInicial()
+
   return {
-    ...documentoInicial(),
+    ...inicial,
+    laminaAtivaId: inicial.laminas[0].id,
     slotSelecionado: null,
     passado: [],
     futuro: [],
@@ -203,7 +248,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         ...alvo,
         passado: s.passado.slice(0, -1),
         futuro: [...s.futuro, documento(s)],
-        slotSelecionado: selecaoValida(alvo, s.slotSelecionado),
+        ...ajustarFoco(alvo, s.laminaAtivaId, s.slotSelecionado),
       })
       coletarLixo(get())
     },
@@ -217,7 +262,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         ...alvo,
         passado: [...s.passado, documento(s)].slice(-LIMITE_HISTORICO),
         futuro: s.futuro.slice(0, -1),
-        slotSelecionado: selecaoValida(alvo, s.slotSelecionado),
+        ...ajustarFoco(alvo, s.laminaAtivaId, s.slotSelecionado),
       })
       coletarLixo(get())
     },
@@ -230,15 +275,26 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
     removerImagem: (id) =>
       editar((s) => ({
         imagens: s.imagens.filter((i) => i.id !== id),
-        slots: s.slots.map((slot) =>
-          slot.imagemId === id ? { slotId: slot.slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
-        ),
+        // a foto some de todas as lâminas, não só da que está em edição
+        laminas: s.laminas.map((l) => ({
+          ...l,
+          slots: l.slots.map((slot) =>
+            slot.imagemId === id ? { slotId: slot.slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+          ),
+        })),
       })),
 
     /** Recomeço do zero: descarta o histórico, então as imagens somem de vez. */
     limparTudo: () => {
       ultimaTag = null
-      set({ ...documentoInicial(), slotSelecionado: null, passado: [], futuro: [] })
+      const doc = documentoInicial()
+      set({
+        ...doc,
+        laminaAtivaId: doc.laminas[0].id,
+        slotSelecionado: null,
+        passado: [],
+        futuro: [],
+      })
       coletarLixo(get())
     },
 
@@ -267,109 +323,177 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
     definirFormato: (formatoId) =>
       editar((s) => (s.formatoId === formatoId ? null : trocarFormato(s, formatoId))),
 
+    /** Nova lâmina em branco, com o mesmo layout da atual, logo depois dela. */
+    adicionarLamina: () =>
+      editar((s) => {
+        const atual = laminaAtiva(s)
+        const nova = novaLamina(atual.layoutId)
+        const i = s.laminas.indexOf(atual)
+        return {
+          laminas: [...s.laminas.slice(0, i + 1), nova, ...s.laminas.slice(i + 1)],
+          laminaAtivaId: nova.id,
+          slotSelecionado: null,
+        }
+      }),
+
+    duplicarLamina: (id) =>
+      editar((s) => {
+        const alvo = s.laminas.find((l) => l.id === id)
+        if (!alvo) return null
+        const copia: Lamina = { ...alvo, id: novoId(), slots: alvo.slots.map((x) => ({ ...x })) }
+        const i = s.laminas.indexOf(alvo)
+        return {
+          laminas: [...s.laminas.slice(0, i + 1), copia, ...s.laminas.slice(i + 1)],
+          laminaAtivaId: copia.id,
+          slotSelecionado: null,
+        }
+      }),
+
+    /** A última lâmina não pode ser removida — sempre existe uma colagem. */
+    removerLamina: (id) =>
+      editar((s) => {
+        if (s.laminas.length <= 1) return null
+        const i = s.laminas.findIndex((l) => l.id === id)
+        if (i < 0) return null
+        const laminas = s.laminas.filter((l) => l.id !== id)
+        const foco = laminas[Math.min(i, laminas.length - 1)]
+        return { laminas, laminaAtivaId: foco.id, slotSelecionado: null }
+      }),
+
+    selecionarLamina: (laminaAtivaId) => set({ laminaAtivaId, slotSelecionado: null }),
+
     definirLayout: (layoutId) =>
       editar((s) => {
-        if (s.layoutId === layoutId) return null
-        const patch = trocarLayout(s, layoutId)
-        return { ...patch, slotSelecionado: patch.slots?.[0]?.slotId ?? null }
+        const atual = laminaAtiva(s)
+        if (atual.layoutId === layoutId) return null
+        const patch = naLaminaAtiva(s, (l) => migrarLayout(l, layoutId))
+        if (!patch) return null
+        return { ...patch, slotSelecionado: null }
       }),
 
     definirEspacamento: (gap, margem) =>
-      editar((s) => (s.gap === gap && s.margem === margem ? null : { gap, margem }), 'espacamento'),
+      editar(
+        (s) => naLaminaAtiva(s, (l) => (l.gap === gap && l.margem === margem ? null : { gap, margem })),
+        'espacamento',
+      ),
 
     atribuirImagem: (slotId, imagemId) =>
-      editar((s) => ({
-        slots: s.slots.map((slot) =>
-          slot.slotId === slotId ? { slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
-        ),
-        slotSelecionado: slotId,
-      })),
+      editar((s) => {
+        const patch = naLaminaAtiva(s, (l) => ({
+          slots: l.slots.map((slot) =>
+            slot.slotId === slotId ? { slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+          ),
+        }))
+        return patch && { ...patch, slotSelecionado: slotId }
+      }),
 
     /** Clique numa miniatura: vai para o slot selecionado, ou para o primeiro vazio. */
     usarImagem: (imagemId) =>
       editar((s) => {
-        const selecionado = s.slots.find((x) => x.slotId === s.slotSelecionado)
-        const alvo = selecionado?.imagemId ? selecionado : (s.slots.find((x) => !x.imagemId) ?? selecionado)
+        const atual = laminaAtiva(s)
+        const selecionado = atual.slots.find((x) => x.slotId === s.slotSelecionado)
+        const alvo =
+          selecionado?.imagemId ? selecionado : (atual.slots.find((x) => !x.imagemId) ?? selecionado)
         if (!alvo) return null
-        return {
-          slots: s.slots.map((slot) =>
+        const patch = naLaminaAtiva(s, (l) => ({
+          slots: l.slots.map((slot) =>
             slot.slotId === alvo.slotId
               ? { slotId: alvo.slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 }
               : slot,
           ),
-          slotSelecionado: alvo.slotId,
-        }
+        }))
+        return patch && { ...patch, slotSelecionado: alvo.slotId }
       }),
 
     trocarSlots: (a, b) =>
-      editar((s) => {
-        const sa = s.slots.find((x) => x.slotId === a)
-        const sb = s.slots.find((x) => x.slotId === b)
-        if (!sa || !sb) return null
-        return {
-          slots: s.slots.map((slot) => {
-            if (slot.slotId === a) return { ...sb, slotId: a }
-            if (slot.slotId === b) return { ...sa, slotId: b }
-            return slot
-          }),
-        }
-      }),
+      editar((s) =>
+        naLaminaAtiva(s, (l) => {
+          const sa = l.slots.find((x) => x.slotId === a)
+          const sb = l.slots.find((x) => x.slotId === b)
+          if (!sa || !sb) return null
+          return {
+            slots: l.slots.map((slot) => {
+              if (slot.slotId === a) return { ...sb, slotId: a }
+              if (slot.slotId === b) return { ...sa, slotId: b }
+              return slot
+            }),
+          }
+        }),
+      ),
 
     limparSlot: (slotId) =>
-      editar((s) => ({
-        slots: s.slots.map((slot) =>
-          slot.slotId === slotId ? { slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
-        ),
-      })),
+      editar((s) =>
+        naLaminaAtiva(s, (l) => ({
+          slots: l.slots.map((slot) =>
+            slot.slotId === slotId ? { slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+          ),
+        })),
+      ),
 
     selecionarSlot: (slotSelecionado) => set({ slotSelecionado }),
 
     ajustarSlot: (slotId, patch) =>
       editar(
-        (s) => ({
-          slots: s.slots.map((slot) => {
-            if (slot.slotId !== slotId) return slot
-            const minimo = s.permitirReduzir ? 0.3 : 1
-            return {
-              ...slot,
-              ...patch,
-              escala: clamp(patch.escala ?? slot.escala, minimo, 5),
-              offsetX: clamp(patch.offsetX ?? slot.offsetX, -1, 1),
-              offsetY: clamp(patch.offsetY ?? slot.offsetY, -1, 1),
-            }
-          }),
-        }),
+        (s) =>
+          naLaminaAtiva(s, (l) => ({
+            slots: l.slots.map((slot) => {
+              if (slot.slotId !== slotId) return slot
+              const minimo = s.permitirReduzir ? 0.3 : 1
+              return {
+                ...slot,
+                ...patch,
+                escala: clamp(patch.escala ?? slot.escala, minimo, 5),
+                offsetX: clamp(patch.offsetX ?? slot.offsetX, -1, 1),
+                offsetY: clamp(patch.offsetY ?? slot.offsetY, -1, 1),
+              }
+            }),
+          })),
         `ajuste:${slotId}`,
       ),
 
     redefinirSlot: (slotId) =>
-      editar((s) => ({
-        slots: s.slots.map((slot) =>
-          slot.slotId === slotId ? { ...slot, escala: 1, offsetX: 0, offsetY: 0 } : slot,
-        ),
-      })),
+      editar((s) =>
+        naLaminaAtiva(s, (l) => ({
+          slots: l.slots.map((slot) =>
+            slot.slotId === slotId ? { ...slot, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+          ),
+        })),
+      ),
 
+    /**
+     * Preenche a lâmina atual com fotos que não estão em nenhuma outra lâmina.
+     * É o que permite distribuir um álbum inteiro: adiciona lâmina, preenche,
+     * repete — sem repetir foto.
+     */
     preencherAutomaticamente: () =>
       editar((s) => {
-        const usadas = new Set(s.slots.map((x) => x.imagemId).filter(Boolean))
+        const usadas = new Set(s.laminas.flatMap((l) => l.slots.map((x) => x.imagemId)))
         const disponiveis = s.imagens.map((i) => i.id).filter((id) => !usadas.has(id))
-        if (disponiveis.length === 0 || s.slots.every((x) => x.imagemId)) return null
+        if (disponiveis.length === 0) return null
 
         let cursor = 0
-        return {
-          slots: s.slots.map((slot) => {
-            if (slot.imagemId) return slot
-            const id = disponiveis[cursor++]
-            return id ? { slotId: slot.slotId, imagemId: id, escala: 1, offsetX: 0, offsetY: 0 } : slot
-          }),
-        }
+        return naLaminaAtiva(s, (l) =>
+          l.slots.every((x) => x.imagemId)
+            ? null
+            : {
+                slots: l.slots.map((slot) => {
+                  if (slot.imagemId) return slot
+                  const id = disponiveis[cursor++]
+                  return id
+                    ? { slotId: slot.slotId, imagemId: id, escala: 1, offsetX: 0, offsetY: 0 }
+                    : slot
+                }),
+              },
+        )
       }),
 
     esvaziarSlots: () =>
       editar((s) =>
-        s.slots.every((x) => !x.imagemId)
-          ? null
-          : { slots: s.slots.map((x) => ({ slotId: x.slotId, escala: 1, offsetX: 0, offsetY: 0 })) },
+        naLaminaAtiva(s, (l) =>
+          l.slots.every((x) => !x.imagemId)
+            ? null
+            : { slots: l.slots.map((x) => ({ slotId: x.slotId, escala: 1, offsetX: 0, offsetY: 0 })) },
+        ),
       ),
 
     alternarPermitirReduzir: () =>
@@ -377,7 +501,12 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         const permitir = !s.permitirReduzir
         return {
           permitirReduzir: permitir,
-          slots: permitir ? s.slots : s.slots.map((x) => ({ ...x, escala: Math.max(1, x.escala) })),
+          laminas: permitir
+            ? s.laminas
+            : s.laminas.map((l) => ({
+                ...l,
+                slots: l.slots.map((x) => ({ ...x, escala: Math.max(1, x.escala) })),
+              })),
         }
       }),
   }

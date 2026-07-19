@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useColagemStore } from '../../store/useColagemStore'
+import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId } from '../../data/formatos'
 import { DESCRICAO_ESTILO, layoutsAgrupados, ROTULO_ESTILO } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
@@ -13,11 +13,11 @@ type Filtro = number | null
 
 export function AbaLayout() {
   const formatoId = useColagemStore((s) => s.formatoId)
-  const layoutId = useColagemStore((s) => s.layoutId)
+  const lamina = useColagemStore(laminaAtiva)
   const corFundo = useColagemStore((s) => s.corFundo)
-  const gap = useColagemStore((s) => s.gap)
-  const margem = useColagemStore((s) => s.margem)
   const definirLayout = useColagemStore((s) => s.definirLayout)
+
+  const { layoutId, gap, margem } = lamina
 
   const [filtro, setFiltro] = useState<Filtro>(null)
 

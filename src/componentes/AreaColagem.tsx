@@ -1,5 +1,5 @@
 import { Info, MousePointer2 } from 'lucide-react'
-import { useColagemStore } from '../store/useColagemStore'
+import { laminaAtiva, useColagemStore } from '../store/useColagemStore'
 import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
 import { useMedidas } from '../lib/useMedidas'
@@ -10,15 +10,18 @@ const FOLGA = 48
 
 export function AreaColagem() {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
-  const layout = layoutPorId(useColagemStore((s) => s.layoutId))
-  const slots = useColagemStore((s) => s.slots)
+  const lamina = useColagemStore(laminaAtiva)
+  const indice = useColagemStore((s) => s.laminas.findIndex((l) => l.id === s.laminaAtivaId))
+  const totalLaminas = useColagemStore((s) => s.laminas.length)
   const temImagens = useColagemStore((s) => s.imagens.length > 0)
   const destino = useColagemStore((s) => s.destino)
 
   const { ref, largura, altura } = useMedidas<HTMLDivElement>()
 
-  if (!formato || !layout) return null
+  const layout = layoutPorId(lamina?.layoutId ?? null)
+  if (!formato || !layout || !lamina) return null
 
+  const slots = lamina.slots
   const preenchidos = slots.filter((s) => s.imagemId).length
   const temZonaSegura = destino === 'stories' || destino === 'reels'
 
@@ -26,6 +29,14 @@ export function AreaColagem() {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-6 py-2.5">
         <p className="truncate text-xs text-neutral-400">
+          {totalLaminas > 1 && (
+            <>
+              <span className="font-medium text-violet-300">
+                Lâmina {indice + 1}/{totalLaminas}
+              </span>
+              <span className="text-neutral-600"> · </span>
+            </>
+          )}
           <span className="font-medium text-neutral-200">{layout.nome}</span>
           <span className="text-neutral-600"> · </span>
           {formato.largura}×{formato.altura} px

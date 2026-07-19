@@ -9,9 +9,10 @@ Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
 trafega pela rede**. React + Vite + TypeScript, Tailwind v4, Zustand, dnd-kit,
 react-dropzone, lucide-react e pica.
 
-A interface é **uma tela só** — bandeja de fotos à esquerda, colagem no centro,
-painel com abas (Formato · Layout · Ajustes · Exportar) à direita. Não existe
-wizard: tudo pode ser mexido a qualquer momento, com desfazer/refazer.
+A interface é **uma tela só** — bandeja de fotos e pilha de lâminas à esquerda,
+colagem no centro, painel com abas (Formato · Layout · Ajustes) à direita e a
+exportação nos controles do topo. Não existe wizard: tudo pode ser mexido a
+qualquer momento, com desfazer/refazer.
 
 Interface em **português do Brasil** — nomes de arquivos, variáveis, tipos e
 componentes também são em português. Mantenha esse padrão.
@@ -55,8 +56,31 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
+| `src/componentes/PainelLaminas.tsx` | Pilha de lâminas, com miniaturas reais e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
+
+### Lâminas
+
+O documento tem **uma lista de lâminas** (`Lamina[]`), não uma colagem só. Cada
+lâmina é `{ id, layoutId, slots, gap, margem }` — layout e preenchimento são
+dela. O que é do documento inteiro e vale para todas: **fotos, formato,
+plataforma/destino e cor de fundo**. É o que faz sentido para um carrossel: as
+lâminas variam de layout, não de proporção.
+
+Consequências ao mexer aqui:
+
+- Componentes não leem mais `s.slots`/`s.layoutId`; usam o seletor
+  `laminaAtiva(s)`. Mutações passam por `naLaminaAtiva()`.
+- `trocarFormato` migra **todas** as lâminas cujo layout não serve para a nova
+  proporção, não só a ativa. `removerImagem` limpa a foto de todas.
+- `preencherAutomaticamente` só usa fotos que não estão em **nenhuma** lâmina.
+  É o que permite "adiciona lâmina, preenche, repete" distribuir um álbum sem
+  repetir foto.
+- `laminaAtivaId` é estado de tela e fica fora do `Documento` — mas o desfazer
+  precisa reposicionar o foco quando a lâmina ativa deixa de existir no
+  documento restaurado, e é isso que `ajustarFoco` faz.
+- Sempre existe pelo menos uma lâmina: `removerLamina` não deixa esvaziar.
 
 ### Modelo de slots
 
@@ -114,10 +138,13 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
 
 ## Detalhes que costumam confundir
 
-- **A exportação é disparada de dois lugares** — o botão "Exportar PNG" do topo
-  e a aba Exportar — e por isso o estado dela (`ocupado`, `erro`, `gerados`)
-  mora num store próprio, não em `useState` de componente. Se voltasse para
-  dentro de um componente, um lugar não veria o que o outro fez.
+- **A exportação não é uma etapa nem uma aba** — é o seletor de formato mais o
+  botão, no topo, disponíveis o tempo todo. O estado dela (`tipo`, `ocupado`,
+  `erro`, `gerados`) mora num store próprio porque seletor e botão são
+  componentes irmãos: com `useState` num deles, o outro não enxergaria. Como
+  não há mais painel de exportação, o retorno (arquivo gerado, tamanho, slots
+  vazios, erro) aparece no próprio botão e no seu tooltip — se você acrescentar
+  algo ao resultado da exportação, é lá que precisa aparecer.
 - **O padrão do feed do Instagram é 3:4** (`recomendado` em `formatos.ts`), não
   4:5. É a única proporção que casa com a miniatura do grid do perfil, então
   nada é recortado. Mudar o padrão é mudar a flag `recomendado` — o estado

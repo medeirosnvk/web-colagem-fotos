@@ -114,13 +114,23 @@ async function prepararOrigem(
 
 export type TipoArquivo = 'png' | 'jpg'
 
-export function nomeArquivo(formato: Formato, tipo: TipoArquivo): string {
+export function carimboAgora(): string {
+  return new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
+}
+
+/**
+ * Com várias lâminas, o índice entra no nome e o carimbo é o mesmo para todas —
+ * é o que mantém o lote junto na pasta de downloads.
+ */
+export function nomeArquivo(
+  formato: Formato,
+  tipo: TipoArquivo,
+  opcoes: { carimbo?: string; indice?: number } = {},
+): string {
   const proporcao = formato.proporcao.replace(/[:.]/g, '-')
-  const carimbo = new Date()
-    .toISOString()
-    .replace(/[-:T]/g, '')
-    .slice(0, 14)
-  return `colagem-${formato.destino}-${proporcao}-${carimbo}.${tipo}`
+  const carimbo = opcoes.carimbo ?? carimboAgora()
+  const sufixo = opcoes.indice ? `-lamina${opcoes.indice}` : ''
+  return `colagem-${formato.destino}-${proporcao}-${carimbo}${sufixo}.${tipo}`
 }
 
 export function canvasParaBlob(canvas: HTMLCanvasElement, tipo: TipoArquivo): Promise<Blob> {
@@ -148,19 +158,33 @@ export function baixarBlob(blob: Blob, nome: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
-/** Renderiza e baixa nos tipos pedidos. Retorna o tamanho de cada arquivo. */
-export async function exportarColagem(
-  params: ParametrosRender,
-  tipos: TipoArquivo[],
+/**
+ * Renderiza e baixa uma lâmina por item, no tipo pedido. Cada lâmina vira um
+ * canvas próprio na resolução exata do formato — nada é reaproveitado da tela.
+ */
+export async function exportarColagens(
+  itens: ParametrosRender[],
+  tipo: TipoArquivo,
 ): Promise<{ tipo: TipoArquivo; nome: string; bytes: number }[]> {
-  const canvas = await renderizarColagem(params)
+  const carimbo = carimboAgora()
+  const varias = itens.length > 1
   const resultados = []
 
-  for (const tipo of tipos) {
+  for (const [i, params] of itens.entries()) {
+    const canvas = await renderizarColagem(params)
     const blob = await canvasParaBlob(canvas, tipo)
-    const nome = nomeArquivo(params.formato, tipo)
+    const nome = nomeArquivo(params.formato, tipo, {
+      carimbo,
+      indice: varias ? i + 1 : undefined,
+    })
     baixarBlob(blob, nome)
     resultados.push({ tipo, nome, bytes: blob.size })
+
+    // Downloads em rajada disparam o bloqueio de "vários arquivos" do Chrome;
+    // um respiro entre eles resolve.
+    if (varias && i < itens.length - 1) {
+      await new Promise((r) => setTimeout(r, 350))
+    }
   }
 
   return resultados
