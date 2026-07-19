@@ -39,13 +39,13 @@ corresponda ao que aparece na tela.
 
 Os slots são retângulos livres em coordenadas relativas — não precisam ladrilhar a tela
 nem ser disjuntos. Quando se sobrepõem, vale a ordem do array (o último é desenhado por
-cima). São 31 layouts, agrupados em quatro estilos:
+cima). São 39 layouts, agrupados em quatro estilos:
 
 | Estilo | O que é |
 | --- | --- |
 | **Grades** | Fotos encostadas, preenchendo a tela inteira (1, 2, 3, 4 e 6 fotos). |
 | **Moldura e respiro** | Foto flutuando na cor de fundo, com área livre para texto: polaroide, faixa central, espaço para título, tela cheia com filete. |
-| **Assimétricos** | Posições desencontradas sem sobreposição: escada, revista, zigue-zague, mosaico solto, sangrado lateral/topo. |
+| **Assimétricos** | Posições desencontradas sem sobreposição: escada, revista, zigue-zague, mosaico solto, sangrado lateral/topo, e oito layouts medidos a partir de templates de referência (fotos grandes, margens generosas, algumas sangrando pela borda). |
 | **Sobrepostos** | Fotos se cruzando, separadas por um `contorno` na cor de fundo (recorte de revista). |
 
 Dois recursos visuais opcionais por layout, ambos com a mesma geometria no editor e na

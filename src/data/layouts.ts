@@ -167,6 +167,30 @@ export const CATALOGO: Record<string, Layout> = {
     ALTAS,
     [slot('s1', 0.06, 0.08, 0.5, 0.36), slot('s2', 0.44, 0.5, 0.5, 0.42)],
   ),
+  // Medidos a partir dos templates de referência (colagens 9:16 em fundo
+  // branco): fotos grandes, margens generosas e algumas sangrando pela borda.
+  'livre-duas-moldura-empilhada': montar(
+    'livre-duas-moldura-empilhada',
+    '2 fotos — empilhadas com moldura',
+    'livre',
+    TODAS,
+    [slot('s1', 0.07, 0.03, 0.86, 0.45), slot('s2', 0.07, 0.52, 0.86, 0.45)],
+  ),
+  'livre-duas-sangradas': montar(
+    'livre-duas-sangradas',
+    '2 fotos — desencontradas sangradas',
+    'livre',
+    TODAS,
+    [slot('s1', 0.13, 0, 0.87, 0.49), slot('s2', 0, 0.51, 0.87, 0.49)],
+  ),
+  'livre-duas-grandes': montar(
+    'livre-duas-grandes',
+    '2 fotos — desencontradas grandes',
+    'livre',
+    TODAS,
+    [slot('s1', 0.23, 0.03, 0.72, 0.46), slot('s2', 0.05, 0.53, 0.9, 0.44)],
+  ),
+
   'livre-tres-revista': montar('livre-tres-revista', '3 fotos — revista', 'livre', ALTAS, [
     slot('s1', 0.06, 0.05, 0.88, 0.4),
     slot('s2', 0.06, 0.48, 0.43, 0.3),
@@ -183,12 +207,65 @@ export const CATALOGO: Record<string, Layout> = {
       slot('s3', 0.3, 0.67, 0.64, 0.29),
     ],
   ),
+  'livre-tres-coluna': montar('livre-tres-coluna', '3 fotos — coluna sangrada', 'livre', TODAS, [
+    slot('s1', 0.06, 0, 0.88, 0.32),
+    slot('s2', 0.06, 0.345, 0.88, 0.31),
+    slot('s3', 0.06, 0.69, 0.88, 0.31),
+  ]),
+  'livre-tres-escada-larga': montar(
+    'livre-tres-escada-larga',
+    '3 fotos — escada larga',
+    'livre',
+    TODAS,
+    [
+      slot('s1', 0.03, 0.02, 0.64, 0.33),
+      slot('s2', 0.34, 0.35, 0.64, 0.3),
+      slot('s3', 0.03, 0.65, 0.64, 0.33),
+    ],
+  ),
+  'livre-tres-lateral': montar(
+    'livre-tres-lateral',
+    '3 fotos — grande à esquerda solta',
+    'livre',
+    TODAS,
+    [
+      slot('s1', 0.03, 0.21, 0.46, 0.58),
+      slot('s2', 0.51, 0.04, 0.46, 0.38),
+      slot('s3', 0.51, 0.58, 0.46, 0.37),
+    ],
+  ),
+
   'livre-quatro-mosaico': montar('livre-quatro-mosaico', '4 fotos — mosaico solto', 'livre', ALTAS, [
     slot('s1', 0.06, 0.06, 0.52, 0.34),
     slot('s2', 0.62, 0.06, 0.32, 0.34),
     slot('s3', 0.06, 0.44, 0.32, 0.34),
     slot('s4', 0.42, 0.44, 0.52, 0.34),
   ]),
+  'livre-quatro-colunas': montar(
+    'livre-quatro-colunas',
+    '4 fotos — colunas desencontradas',
+    'livre',
+    TODAS,
+    [
+      slot('s1', 0.04, 0.06, 0.45, 0.37),
+      slot('s2', 0.52, 0.17, 0.45, 0.37),
+      slot('s3', 0.04, 0.46, 0.45, 0.37),
+      slot('s4', 0.52, 0.56, 0.45, 0.37),
+    ],
+  ),
+  'livre-quatro-destaque-faixa': montar(
+    'livre-quatro-destaque-faixa',
+    '4 fotos — destaque + faixa sangrada',
+    'livre',
+    TODAS,
+    [
+      slot('s1', 0.08, 0.04, 0.85, 0.59),
+      slot('s2', 0, 0.67, 0.32, 0.33),
+      slot('s3', 0.34, 0.67, 0.32, 0.33),
+      slot('s4', 0.68, 0.67, 0.32, 0.33),
+    ],
+  ),
+
   'sangrado-lateral': montar('sangrado-lateral', 'Sangrado lateral + flutuante', 'livre', TODAS, [
     slot('s1', 0.42, 0, 0.58, 1),
     slot('s2', 0.06, 0.3, 0.4, 0.4),
