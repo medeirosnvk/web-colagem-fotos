@@ -10,6 +10,7 @@ import {
 } from '@dnd-kit/core'
 import { RotateCcw, Redo2, Scissors, Undo2 } from 'lucide-react'
 import { BandejaImagens } from './componentes/BandejaImagens'
+import { BotaoExportar } from './componentes/BotaoExportar'
 import { AreaColagem } from './componentes/AreaColagem'
 import { PainelLateral } from './componentes/paineis/PainelLateral'
 import { useColagemStore } from './store/useColagemStore'
@@ -117,6 +118,8 @@ export default function App() {
             <BotaoIcone titulo="Recomeçar do zero" onClick={recomecar}>
               <RotateCcw size={15} />
             </BotaoIcone>
+            <span className="mx-2 h-5 w-px bg-neutral-800" />
+            <BotaoExportar />
           </div>
         </header>
 

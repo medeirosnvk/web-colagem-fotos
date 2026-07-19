@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import { CheckCircle2, Download, Loader2, ShieldCheck } from 'lucide-react'
 import { useColagemStore } from '../../store/useColagemStore'
+import { useExportacaoStore } from '../../store/useExportacaoStore'
 import { formatoPorId, ROTULO_DESTINO, ROTULO_PLATAFORMA } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
-import { layoutEfetivo } from '../../lib/layoutEfetivo'
-import { exportarColagem, type TipoArquivo } from '../../lib/exportarColagem'
 import { Botao } from '../ui/Botao'
 import { Secao } from './PainelLateral'
 
@@ -17,41 +15,17 @@ function formatarBytes(bytes: number) {
 export function AbaExportar() {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
   const layoutBase = layoutPorId(useColagemStore((s) => s.layoutId))
-  const gap = useColagemStore((s) => s.gap)
-  const margem = useColagemStore((s) => s.margem)
   const corFundo = useColagemStore((s) => s.corFundo)
   const slots = useColagemStore((s) => s.slots)
-  const imagens = useColagemStore((s) => s.imagens)
   const plataforma = useColagemStore((s) => s.plataforma)
   const destino = useColagemStore((s) => s.destino)
 
-  const [ocupado, setOcupado] = useState<TipoArquivo[] | null>(null)
-  const [erro, setErro] = useState<string | null>(null)
-  const [gerados, setGerados] = useState<{ nome: string; bytes: number }[]>([])
+  const exportar = useExportacaoStore((s) => s.exportar)
+  const ocupado = useExportacaoStore((s) => s.ocupado)
+  const erro = useExportacaoStore((s) => s.erro)
+  const gerados = useExportacaoStore((s) => s.gerados)
 
   if (!formato || !layoutBase) return null
-
-  async function exportar(tipos: TipoArquivo[]) {
-    setOcupado(tipos)
-    setErro(null)
-    try {
-      const resultado = await exportarColagem(
-        {
-          formato: formato!,
-          layout: layoutEfetivo(layoutBase!, gap, margem),
-          corFundo,
-          slots,
-          imagens,
-        },
-        tipos,
-      )
-      setGerados(resultado.map((r) => ({ nome: r.nome, bytes: r.bytes })))
-    } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Falha inesperada ao exportar.')
-    } finally {
-      setOcupado(null)
-    }
-  }
 
   const vazios = slots.filter((s) => !s.imagemId).length
 

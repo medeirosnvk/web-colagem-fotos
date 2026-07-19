@@ -24,6 +24,7 @@ npm run dev
 | `src/data/formatos.ts` | Tabela de formatos (plataforma × destino × proporção → pixels exatos) |
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1) + ordem por proporção |
 | `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
+| `src/store/useExportacaoStore.ts` | Estado da exportação, compartilhado pelo botão do topo e pela aba Exportar |
 | `src/lib/cover.ts` | Geometria compartilhada: retângulo do slot e retângulo da imagem (cover + escala + offset) |
 | `src/lib/exportarColagem.ts` | Render no canvas na resolução exata, downscale com pica, PNG/JPG |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
@@ -62,7 +63,7 @@ você escrever por cima no app de publicação. O app não insere texto.
 
 | Plataforma | Destino | Proporções |
 | --- | --- | --- |
-| Instagram | Feed | 1:1 (1080×1080) · 4:5 (1080×1350) · 3:4 (1080×1440) · 1.91:1 (1080×566) |
+| Instagram | Feed | **3:4 (1080×1440, padrão)** · 1:1 (1080×1080) · 4:5 (1080×1350) · 1.91:1 (1080×566) |
 | Instagram | Stories / Reels | 9:16 (1080×1920) |
 | Facebook | Feed | 1:1 (1080×1080) · 4:5 (1080×1350) · 1.91:1 (1200×630) |
 | Facebook | Stories / Reels | 9:16 (1080×1920) |
@@ -91,8 +92,10 @@ você escrever por cima no app de publicação. O app não insere texto.
 5. **Desfazer/refazer** — `Ctrl+Z` e `Ctrl+Shift+Z` (ou os botões no topo) voltam qualquer
    coisa: trocar layout, mudar formato, mexer numa foto, até remover uma foto da bandeja.
    Arrastar uma foto ou mexer num slider conta como **um** passo, não um por pixel.
-6. **Aba Exportar** — baixe PNG e/ou JPG. O nome sai como
-   `colagem-{destino}-{proporcao}-{timestamp}`.
+6. **Exportar** — o botão **Exportar PNG** no topo baixa direto, a qualquer momento. A aba
+   Exportar traz JPG, "baixar os dois" e o resumo do que vai ser gerado; os dois caminhos
+   compartilham o mesmo estado, então o arquivo gerado pelo botão do topo aparece listado
+   na aba. O nome sai como `colagem-{destino}-{proporcao}-{timestamp}`.
 
 Para conferir que a exportação não é print de tela: abra o PNG baixado e verifique que ele
 tem exatamente as dimensões da tabela acima (ex.: 1080×1350), independentemente do tamanho

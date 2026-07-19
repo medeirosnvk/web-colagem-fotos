@@ -23,8 +23,7 @@ export const FORMATOS: Formato[] = [
     rotulo: 'Retrato 4:5',
     largura: 1080,
     altura: 1350,
-    recomendado: true,
-    observacao: 'Ocupa mais espaço vertical no feed. É a escolha mais segura.',
+    observacao: 'Formato clássico do feed. No grid do perfil ele ainda é recortado para 3:4.',
   },
   {
     id: 'ig-feed-3-4',
@@ -34,7 +33,9 @@ export const FORMATOS: Formato[] = [
     rotulo: 'Retrato 3:4',
     largura: 1080,
     altura: 1440,
-    observacao: 'Casa exatamente com a miniatura do grid do perfil.',
+    recomendado: true,
+    observacao:
+      'A mais alta do feed e a única que casa exatamente com a miniatura do grid do perfil — nada é recortado.',
   },
   {
     id: 'ig-feed-191-1',

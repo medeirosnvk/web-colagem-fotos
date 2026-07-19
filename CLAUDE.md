@@ -50,6 +50,7 @@ componentes também são em português. Mantenha esse padrão.
 | `src/data/formatos.ts` | Formatos: plataforma × destino × proporção → pixels exatos |
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1), agrupados por estilo |
 | `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
+| `src/store/useExportacaoStore.ts` | Estado da exportação — fora do documento, fora do desfazer |
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
@@ -113,6 +114,14 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
 
 ## Detalhes que costumam confundir
 
+- **A exportação é disparada de dois lugares** — o botão "Exportar PNG" do topo
+  e a aba Exportar — e por isso o estado dela (`ocupado`, `erro`, `gerados`)
+  mora num store próprio, não em `useState` de componente. Se voltasse para
+  dentro de um componente, um lugar não veria o que o outro fez.
+- **O padrão do feed do Instagram é 3:4** (`recomendado` em `formatos.ts`), não
+  4:5. É a única proporção que casa com a miniatura do grid do perfil, então
+  nada é recortado. Mudar o padrão é mudar a flag `recomendado` — o estado
+  inicial e a troca de plataforma/destino leem dela, não de um id fixo.
 - **Zonas seguras (250 px) em Stories/Reels não são corte.** Nada é cortado em
   9:16 — as faixas marcam onde o app desenha perfil, legenda e botões **por
   cima**. O aviso de recorte de verdade é outro: o grid do perfil do Instagram
