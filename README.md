@@ -5,6 +5,11 @@ Não existe backend: as imagens são lidas via Object URL, a colagem é desenhad
 `HTMLCanvasElement` e o arquivo é salvo direto pelo navegador. Nenhum byte de imagem
 trafega pela rede.
 
+Tudo acontece numa **tela só**: bandeja de fotos à esquerda, colagem no centro, painel
+com abas (Formato · Layout · Ajustes · Exportar) à direita. Qualquer escolha pode ser
+mudada a qualquer momento, e todo o histórico tem desfazer/refazer (`Ctrl+Z` /
+`Ctrl+Shift+Z`).
+
 ## Rodando
 
 ```bash
@@ -18,11 +23,12 @@ npm run dev
 | --- | --- |
 | `src/data/formatos.ts` | Tabela de formatos (plataforma × destino × proporção → pixels exatos) |
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1) + ordem por proporção |
-| `src/store/useColagemStore.ts` | Estado do wizard (zustand) |
+| `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
 | `src/lib/cover.ts` | Geometria compartilhada: retângulo do slot e retângulo da imagem (cover + escala + offset) |
 | `src/lib/exportarColagem.ts` | Render no canvas na resolução exata, downscale com pica, PNG/JPG |
-| `src/componentes/etapas/` | Uma etapa do wizard por arquivo |
-| `src/componentes/editor/` | Tela da colagem, slot interativo e painel de ajuste |
+| `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
+| `src/componentes/AreaColagem.tsx` | Centro da tela: mede o espaço livre e escala a colagem para caber |
+| `src/componentes/editor/` | Tela da colagem e slot interativo |
 
 O editor e a exportação usam **a mesma** função de geometria (`cover.ts`); o editor apenas
 multiplica tudo por uma escala de preview. É isso que garante que o arquivo exportado
@@ -63,26 +69,29 @@ você escrever por cima no app de publicação. O app não insere texto.
 
 ## Como testar
 
-1. **Etapa 1** — solte algumas fotos (JPG/PNG/WEBP). Elas ficam na bandeja à esquerda
-   durante todo o fluxo; o "X" na miniatura revoga o Object URL.
-2. **Etapa 2** — troque entre Instagram e Facebook e entre Feed/Stories/Reels: a lista de
-   proporções muda embaixo.
-3. **Etapa 3** — escolha branco ou preto; a cor aparece nos previews de layout, no editor e
-   na exportação.
-4. **Etapa 4** — escolha a proporção e o layout. Em proporções altas (9:16, 3:4, 4:5) os
-   layouts empilhados vêm primeiro; em paisagem, as divisões verticais. No feed do Instagram
-   aparece o aviso do recorte 3:4 do grid.
-5. **Etapa 5** — arraste miniaturas da bandeja para os slots. Dentro do slot: arraste a foto
-   para reposicionar, role o mouse (ou use o slider) para dar zoom. A alça no canto superior
-   esquerdo troca fotos entre slots. Em Stories/Reels aparecem as zonas seguras pontilhadas,
-   que **não** são exportadas.
+1. **Fotos** — solte arquivos (JPG/PNG/WEBP) em qualquer lugar da bandeja, ou use
+   "Adicionar fotos". Dá para carregar mais fotos a qualquer momento, sem sair de onde
+   você está.
+2. **Aba Formato** — troque entre Instagram/Facebook e Feed/Stories/Reels: as proporções
+   mudam junto e a colagem se reajusta na hora. No feed do Instagram aparece o aviso do
+   recorte 3:4 do grid. A cor de fundo (branco/preto) também mora aqui.
+3. **Aba Layout** — filtre por quantidade de fotos e escolha entre os 31 layouts. Trocar de
+   layout **mantém as fotos já posicionadas**, na ordem.
+4. **Montagem** — arraste miniaturas da bandeja para os slots, ou clique numa miniatura para
+   pôr no slot selecionado. Dentro do slot: arraste a foto para reposicionar, role o mouse
+   (ou use o slider da aba Ajustes) para dar zoom. A alça no canto superior esquerdo troca
+   fotos entre slots. Em Stories/Reels aparecem as zonas seguras pontilhadas, que **não**
+   são exportadas.
 
    > As faixas pontilhadas **não indicam corte**. Em 9:16 nada é cortado: elas marcam os
    > ~250 px onde o Instagram/Facebook desenha perfil, horário e botões (topo) e legenda,
    > campo de mensagem e ações (base) **por cima** da sua colagem. Evite rostos e texto ali.
    > O único recorte real avisado pelo app é o do grid do perfil do Instagram, que corta a
-   > publicação do feed para 3:4 — esse aviso aparece na etapa 4.
-6. **Etapa 6** — baixe PNG e/ou JPG. O nome sai como
+   > publicação do feed para 3:4 — esse aviso aparece na aba Formato.
+5. **Desfazer/refazer** — `Ctrl+Z` e `Ctrl+Shift+Z` (ou os botões no topo) voltam qualquer
+   coisa: trocar layout, mudar formato, mexer numa foto, até remover uma foto da bandeja.
+   Arrastar uma foto ou mexer num slider conta como **um** passo, não um por pixel.
+6. **Aba Exportar** — baixe PNG e/ou JPG. O nome sai como
    `colagem-{destino}-{proporcao}-{timestamp}`.
 
 Para conferir que a exportação não é print de tela: abra o PNG baixado e verifique que ele

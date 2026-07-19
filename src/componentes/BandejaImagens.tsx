@@ -1,13 +1,14 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { useDropzone } from 'react-dropzone'
-import { ImagePlus, Images, Trash2, X } from 'lucide-react'
+import { ImagePlus, Images, Loader2, ShieldCheck, X } from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
 import { carregarImagens, TIPOS_ACEITOS } from '../lib/carregarImagens'
 import type { Imagem } from '../tipos'
 
 function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
   const removerImagem = useColagemStore((s) => s.removerImagem)
+  const usarImagem = useColagemStore((s) => s.usarImagem)
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `imagem:${imagem.id}`,
     data: { tipo: 'imagem', imagemId: imagem.id },
@@ -26,6 +27,8 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
         src={imagem.url}
         alt={imagem.nome}
         draggable={false}
+        onClick={() => usarImagem(imagem.id)}
+        title="Clique para pôr no slot selecionado · ou arraste até um slot"
         className="h-full w-full cursor-grab object-cover active:cursor-grabbing"
       />
       {usada && (
@@ -52,14 +55,21 @@ export function BandejaImagens() {
   const imagens = useColagemStore((s) => s.imagens)
   const slots = useColagemStore((s) => s.slots)
   const adicionarImagens = useColagemStore((s) => s.adicionarImagens)
-  const limparTudo = useColagemStore((s) => s.limparTudo)
+  const [carregando, setCarregando] = useState(false)
 
   const onDrop = useCallback(
-    async (files: File[]) => adicionarImagens(await carregarImagens(files)),
+    async (files: File[]) => {
+      setCarregando(true)
+      try {
+        adicionarImagens(await carregarImagens(files))
+      } finally {
+        setCarregando(false)
+      }
+    },
     [adicionarImagens],
   )
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: TIPOS_ACEITOS,
     noClick: true,
@@ -68,52 +78,57 @@ export function BandejaImagens() {
   const usadas = new Set(slots.map((s) => s.imagemId).filter(Boolean))
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
-      <header className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-neutral-200">
-          <Images size={15} className="text-violet-400" />
-          Suas fotos
-          <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-400">
-            {imagens.length}
-          </span>
-        </h2>
-        {imagens.length > 0 && (
-          <button
-            type="button"
-            onClick={limparTudo}
-            title="Recomeçar do zero"
-            className="text-neutral-500 transition-colors hover:text-red-400"
-          >
-            <Trash2 size={14} />
-          </button>
-        )}
+    <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
+      <header className="flex items-center gap-2 border-b border-neutral-800 px-4 py-2.5">
+        <Images size={15} className="text-violet-400" />
+        <h2 className="text-sm font-semibold text-neutral-200">Suas fotos</h2>
+        <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-400">
+          {imagens.length}
+        </span>
       </header>
 
       <div
         {...getRootProps()}
-        className={`flex-1 overflow-y-auto p-3 ${isDragActive ? 'bg-violet-500/10' : ''}`}
+        className={`flex min-h-0 flex-1 flex-col ${isDragActive ? 'bg-violet-500/10' : ''}`}
       >
         <input {...getInputProps()} />
 
-        {imagens.length === 0 ? (
-          <p className="mt-10 px-2 text-center text-xs leading-relaxed text-neutral-500">
-            Nenhuma foto ainda.
-            <br />
-            Solte arquivos aqui ou use a área de upload da etapa&nbsp;1.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {imagens.map((imagem) => (
-              <Miniatura key={imagem.id} imagem={imagem} usada={usadas.has(imagem.id)} />
-            ))}
-          </div>
-        )}
+        <div className="px-3 pt-3">
+          <button
+            type="button"
+            onClick={open}
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-700 bg-neutral-900/50 px-3 py-3 text-xs text-neutral-300 transition-colors hover:border-violet-500 hover:text-violet-200"
+          >
+            {carregando ? (
+              <>
+                <Loader2 size={14} className="animate-spin" /> Lendo arquivos…
+              </>
+            ) : (
+              <>
+                <ImagePlus size={14} /> {isDragActive ? 'Pode soltar!' : 'Adicionar fotos'}
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          {imagens.length === 0 ? (
+            <p className="mt-6 px-2 text-center text-[11px] leading-relaxed text-neutral-500">
+              Nenhuma foto ainda. Solte arquivos aqui ou use o botão acima. Aceita JPG, PNG e WEBP.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              {imagens.map((imagem) => (
+                <Miniatura key={imagem.id} imagem={imagem} usada={usadas.has(imagem.id)} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <footer className="border-t border-neutral-800 px-4 py-3 text-[11px] leading-relaxed text-neutral-500">
-        <ImagePlus size={13} className="mb-1 inline text-neutral-600" /> Arraste uma miniatura para
-        um slot na etapa de montagem. Tudo roda no seu computador; nenhuma imagem é enviada para a
-        internet.
+      <footer className="flex items-start gap-2 border-t border-neutral-800 px-4 py-3 text-[11px] leading-relaxed text-neutral-500">
+        <ShieldCheck size={13} className="mt-0.5 shrink-0 text-emerald-500" />
+        Tudo roda no seu computador. Nenhuma imagem é enviada para a internet.
       </footer>
     </aside>
   )

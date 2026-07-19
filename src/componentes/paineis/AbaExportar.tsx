@@ -5,8 +5,8 @@ import { formatoPorId, ROTULO_DESTINO, ROTULO_PLATAFORMA } from '../../data/form
 import { layoutPorId } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
 import { exportarColagem, type TipoArquivo } from '../../lib/exportarColagem'
-import { TelaColagem } from '../editor/TelaColagem'
 import { Botao } from '../ui/Botao'
+import { Secao } from './PainelLateral'
 
 function formatarBytes(bytes: number) {
   return bytes > 1_048_576
@@ -14,7 +14,7 @@ function formatarBytes(bytes: number) {
     : `${Math.round(bytes / 1024)} KB`
 }
 
-export function Etapa6Exportar() {
+export function AbaExportar() {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
   const layoutBase = layoutPorId(useColagemStore((s) => s.layoutId))
   const gap = useColagemStore((s) => s.gap)
@@ -29,7 +29,7 @@ export function Etapa6Exportar() {
   const [erro, setErro] = useState<string | null>(null)
   const [gerados, setGerados] = useState<{ nome: string; bytes: number }[]>([])
 
-  if (!formato || !layoutBase || !plataforma || !destino) return null
+  if (!formato || !layoutBase) return null
 
   async function exportar(tipos: TipoArquivo[]) {
     setOcupado(tipos)
@@ -56,53 +56,44 @@ export function Etapa6Exportar() {
   const vazios = slots.filter((s) => !s.imagemId).length
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl gap-10">
-      <div className="flex flex-1 items-start justify-center">
-        <TelaColagem larguraMax={420} alturaMax={520} interativo={false} mostrarZonaSegura={false} />
-      </div>
-
-      <div className="w-80 shrink-0">
-        <h1 className="text-2xl font-semibold">Exportar</h1>
-        <p className="mt-1 text-sm text-neutral-400">
-          A imagem é redesenhada num canvas na resolução exata do formato — não é uma captura de
-          tela.
-        </p>
-
-        <dl className="mt-6 space-y-2 rounded-xl border border-neutral-800 bg-neutral-900/50 p-4 text-sm">
+    <div className="space-y-5">
+      <Secao titulo="Resumo">
+        <dl className="space-y-1.5 rounded-lg border border-neutral-800 bg-neutral-900/50 p-3 text-xs">
           {[
             ['Destino', `${ROTULO_PLATAFORMA[plataforma]} · ${ROTULO_DESTINO[destino]}`],
-            ['Proporção', formato.proporcao],
             ['Resolução', `${formato.largura} × ${formato.altura} px`],
             ['Fundo', corFundo === '#FFFFFF' ? 'Branco' : 'Preto'],
             ['Layout', layoutBase.nome],
           ].map(([rotulo, valor]) => (
-            <div key={rotulo} className="flex justify-between gap-4">
-              <dt className="text-neutral-500">{rotulo}</dt>
+            <div key={rotulo} className="flex justify-between gap-3">
+              <dt className="shrink-0 text-neutral-500">{rotulo}</dt>
               <dd className="text-right text-neutral-200">{valor}</dd>
             </div>
           ))}
         </dl>
 
         {vazios > 0 && (
-          <p className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+          <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-200">
             {vazios} {vazios === 1 ? 'slot está vazio' : 'slots estão vazios'} e vão sair com a cor
-            de fundo. Volte à montagem se quiser preencher.
+            de fundo.
           </p>
         )}
+      </Secao>
 
-        <div className="mt-6 space-y-2">
+      <Secao titulo="Baixar">
+        <div className="space-y-2">
           <Botao
             variante="primario"
             className="w-full"
             disabled={!!ocupado}
             onClick={() => exportar(['png'])}
           >
-            {ocupado?.[0] === 'png' && ocupado.length === 1 ? (
+            {ocupado?.length === 1 && ocupado[0] === 'png' ? (
               <Loader2 size={15} className="animate-spin" />
             ) : (
               <Download size={15} />
             )}
-            Baixar PNG (sem perdas)
+            PNG (sem perdas)
           </Botao>
 
           <Botao
@@ -111,7 +102,7 @@ export function Etapa6Exportar() {
             disabled={!!ocupado}
             onClick={() => exportar(['jpg'])}
           >
-            <Download size={15} /> Baixar JPG (qualidade 95%)
+            <Download size={15} /> JPG (qualidade 95%)
           </Botao>
 
           <Botao
@@ -124,13 +115,13 @@ export function Etapa6Exportar() {
           </Botao>
         </div>
 
-        {erro && <p className="mt-4 text-sm text-red-400">{erro}</p>}
+        {erro && <p className="mt-3 text-xs text-red-400">{erro}</p>}
 
         {gerados.length > 0 && !ocupado && (
-          <div className="mt-4 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-200">
+          <div className="mt-3 space-y-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-200">
             {gerados.map((g) => (
               <p key={g.nome} className="flex items-start gap-1.5">
-                <CheckCircle2 size={13} className="mt-0.5 shrink-0" />
+                <CheckCircle2 size={12} className="mt-0.5 shrink-0" />
                 <span className="break-all">
                   {g.nome} · {formatarBytes(g.bytes)}
                 </span>
@@ -138,13 +129,13 @@ export function Etapa6Exportar() {
             ))}
           </div>
         )}
+      </Secao>
 
-        <p className="mt-6 flex items-start gap-2 text-xs text-neutral-500">
-          <ShieldCheck size={14} className="mt-0.5 shrink-0 text-emerald-500" />
-          O arquivo é gerado no seu navegador e salvo direto na pasta de downloads. Nenhuma imagem
-          trafega pela rede.
-        </p>
-      </div>
+      <p className="flex items-start gap-2 text-[11px] leading-relaxed text-neutral-500">
+        <ShieldCheck size={13} className="mt-0.5 shrink-0 text-emerald-500" />O arquivo é redesenhado
+        num canvas na resolução exata do formato — não é captura de tela — e salvo direto na sua
+        pasta de downloads. Nenhuma imagem trafega pela rede.
+      </p>
     </div>
   )
 }

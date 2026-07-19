@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -8,46 +8,48 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { ArrowLeft, ArrowRight, Scissors } from 'lucide-react'
-import { BarraProgresso } from './componentes/BarraProgresso'
+import { RotateCcw, Redo2, Scissors, Undo2 } from 'lucide-react'
 import { BandejaImagens } from './componentes/BandejaImagens'
-import { Etapa1Imagens } from './componentes/etapas/Etapa1Imagens'
-import { Etapa2Destino } from './componentes/etapas/Etapa2Destino'
-import { Etapa3Fundo } from './componentes/etapas/Etapa3Fundo'
-import { Etapa4Layout } from './componentes/etapas/Etapa4Layout'
-import { Etapa5Montagem } from './componentes/etapas/Etapa5Montagem'
-import { Etapa6Exportar } from './componentes/etapas/Etapa6Exportar'
-import { Botao } from './componentes/ui/Botao'
-import {
-  maxEtapaLiberada,
-  TOTAL_ETAPAS,
-  useColagemStore,
-  type Etapa,
-} from './store/useColagemStore'
-
-const ROTULO_AVANCAR: Record<Etapa, string> = {
-  1: 'Escolher destino',
-  2: 'Escolher fundo',
-  3: 'Escolher layout',
-  4: 'Montar colagem',
-  5: 'Ir para exportação',
-  6: '',
-}
+import { AreaColagem } from './componentes/AreaColagem'
+import { PainelLateral } from './componentes/paineis/PainelLateral'
+import { useColagemStore } from './store/useColagemStore'
 
 export default function App() {
-  const etapa = useColagemStore((s) => s.etapa)
-  const proxima = useColagemStore((s) => s.proxima)
-  const anterior = useColagemStore((s) => s.anterior)
-  const maxLiberada = useColagemStore(maxEtapaLiberada)
   const atribuirImagem = useColagemStore((s) => s.atribuirImagem)
   const trocarSlots = useColagemStore((s) => s.trocarSlots)
   const imagens = useColagemStore((s) => s.imagens)
+  const desfazer = useColagemStore((s) => s.desfazer)
+  const refazer = useColagemStore((s) => s.refazer)
+  const limparTudo = useColagemStore((s) => s.limparTudo)
+  const podeDesfazer = useColagemStore((s) => s.passado.length > 0)
+  const podeRefazer = useColagemStore((s) => s.futuro.length > 0)
 
   const [arrastando, setArrastando] = useState<string | null>(null)
 
   const sensores = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
   )
+
+  // Ctrl/⌘+Z desfaz, Ctrl+Shift+Z (ou Ctrl+Y) refaz.
+  useEffect(() => {
+    function aoTeclar(e: KeyboardEvent) {
+      if (!e.ctrlKey && !e.metaKey) return
+      const alvo = e.target as HTMLElement | null
+      if (alvo && (alvo.tagName === 'INPUT' || alvo.tagName === 'TEXTAREA')) return
+
+      const tecla = e.key.toLowerCase()
+      if (tecla === 'z') {
+        e.preventDefault()
+        if (e.shiftKey) refazer()
+        else desfazer()
+      } else if (tecla === 'y') {
+        e.preventDefault()
+        refazer()
+      }
+    }
+    window.addEventListener('keydown', aoTeclar)
+    return () => window.removeEventListener('keydown', aoTeclar)
+  }, [desfazer, refazer])
 
   function aoIniciar(e: DragStartEvent) {
     const dados = e.active.data.current
@@ -73,9 +75,11 @@ export default function App() {
     }
   }
 
+  function recomecar() {
+    if (window.confirm('Descartar a colagem e as fotos carregadas?')) limparTudo()
+  }
+
   const imagemArrastada = imagens.find((i) => i.id === arrastando)
-  const podeAvancar = etapa < TOTAL_ETAPAS && etapa + 1 <= maxLiberada
-  const semRolagem = etapa === 5
 
   return (
     <DndContext
@@ -85,7 +89,7 @@ export default function App() {
       onDragCancel={() => setArrastando(null)}
     >
       <div className="flex h-full flex-col">
-        <header className="flex items-center justify-between gap-6 border-b border-neutral-800 px-5 py-3">
+        <header className="flex items-center justify-between gap-6 border-b border-neutral-800 px-5 py-2.5">
           <div className="flex items-center gap-2">
             <Scissors size={18} className="text-violet-400" />
             <span className="font-semibold">Colagem de Fotos</span>
@@ -93,44 +97,34 @@ export default function App() {
               · local, sem envio para a internet
             </span>
           </div>
-          <BarraProgresso />
+
+          <div className="flex items-center gap-1">
+            <BotaoIcone
+              titulo="Desfazer (Ctrl+Z)"
+              onClick={desfazer}
+              desabilitado={!podeDesfazer}
+            >
+              <Undo2 size={16} />
+            </BotaoIcone>
+            <BotaoIcone
+              titulo="Refazer (Ctrl+Shift+Z)"
+              onClick={refazer}
+              desabilitado={!podeRefazer}
+            >
+              <Redo2 size={16} />
+            </BotaoIcone>
+            <span className="mx-2 h-5 w-px bg-neutral-800" />
+            <BotaoIcone titulo="Recomeçar do zero" onClick={recomecar}>
+              <RotateCcw size={15} />
+            </BotaoIcone>
+          </div>
         </header>
 
         <div className="flex min-h-0 flex-1">
           <BandejaImagens />
-
-          <main className={`min-w-0 flex-1 ${semRolagem ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-            {etapa === 5 ? (
-              <Etapa5Montagem />
-            ) : (
-              <div className="p-8">
-                {etapa === 1 && <Etapa1Imagens />}
-                {etapa === 2 && <Etapa2Destino />}
-                {etapa === 3 && <Etapa3Fundo />}
-                {etapa === 4 && <Etapa4Layout />}
-                {etapa === 6 && <Etapa6Exportar />}
-              </div>
-            )}
-          </main>
+          <AreaColagem />
+          <PainelLateral />
         </div>
-
-        <footer className="flex items-center justify-between border-t border-neutral-800 px-5 py-3">
-          <Botao variante="fantasma" onClick={anterior} disabled={etapa === 1}>
-            <ArrowLeft size={15} /> Voltar
-          </Botao>
-
-          <span className="text-xs text-neutral-500">
-            Etapa {etapa} de {TOTAL_ETAPAS}
-          </span>
-
-          {etapa < TOTAL_ETAPAS ? (
-            <Botao variante="primario" onClick={proxima} disabled={!podeAvancar}>
-              {ROTULO_AVANCAR[etapa]} <ArrowRight size={15} />
-            </Botao>
-          ) : (
-            <span className="w-32" />
-          )}
-        </footer>
       </div>
 
       <DragOverlay dropAnimation={null}>
@@ -143,5 +137,30 @@ export default function App() {
         )}
       </DragOverlay>
     </DndContext>
+  )
+}
+
+function BotaoIcone({
+  titulo,
+  onClick,
+  desabilitado,
+  children,
+}: {
+  titulo: string
+  onClick: () => void
+  desabilitado?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      title={titulo}
+      aria-label={titulo}
+      onClick={onClick}
+      disabled={desabilitado}
+      className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-700 disabled:hover:bg-transparent"
+    >
+      {children}
+    </button>
   )
 }

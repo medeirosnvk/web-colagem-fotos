@@ -9,6 +9,10 @@ Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
 trafega pela rede**. React + Vite + TypeScript, Tailwind v4, Zustand, dnd-kit,
 react-dropzone, lucide-react e pica.
 
+A interface é **uma tela só** — bandeja de fotos à esquerda, colagem no centro,
+painel com abas (Formato · Layout · Ajustes · Exportar) à direita. Não existe
+wizard: tudo pode ser mexido a qualquer momento, com desfazer/refazer.
+
 Interface em **português do Brasil** — nomes de arquivos, variáveis, tipos e
 componentes também são em português. Mantenha esse padrão.
 
@@ -45,12 +49,13 @@ componentes também são em português. Mantenha esse padrão.
 | --- | --- |
 | `src/data/formatos.ts` | Formatos: plataforma × destino × proporção → pixels exatos |
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1), agrupados por estilo |
-| `src/store/useColagemStore.ts` | Estado do wizard (zustand) + `maxEtapaLiberada` |
+| `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
-| `src/componentes/etapas/` | Uma etapa do wizard por arquivo |
-| `src/componentes/editor/` | Tela da colagem, slot interativo, painel de ajuste |
+| `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
+| `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
+| `src/componentes/editor/` | Tela da colagem e slot interativo |
 
 ### Modelo de slots
 
@@ -65,11 +70,27 @@ ser independente da resolução.
 Estado de cada slot: `{ slotId, imagemId?, escala, offsetX, offsetY }`, com
 `escala = 1` significando cover exato e os offsets em -1..1.
 
-### Gating do wizard
+### Histórico (desfazer/refazer)
 
-O bloqueio de etapas é o seletor derivado `maxEtapaLiberada(state)`, **não** um
-método do store — como método ele não dispara re-render quando o pré-requisito
-muda (esse bug já aconteceu uma vez: o botão "Avançar" ficava travado).
+Toda mutação da colagem passa por `editar()` no store, que empilha o
+`Documento` anterior em `passado` e limpa `futuro`. O `Documento` é só o que a
+colagem é — imagens, plataforma, destino, formato, layout, slots, espaçamento.
+`slotSelecionado` fica de fora: é estado de tela, não de documento.
+
+Duas coisas exigem cuidado ao mexer nisso:
+
+- **Fusão de passos.** `editar()` aceita uma `tag`; edições seguidas com a mesma
+  tag dentro de `JANELA_FUSAO_MS` viram um passo só. Sem isso, arrastar uma foto
+  gravaria um passo por pixel. Ações contínuas (arrastar, sliders) precisam de
+  tag; ações discretas, não.
+- **Object URL vs. histórico.** `removerImagem` **não** revoga o URL na hora —
+  se revogasse, desfazer traria de volta uma imagem quebrada. As imagens vivem
+  num `registro` module-level e `coletarLixo()` revoga só as que nenhum ponto do
+  histórico (presente, passado ou futuro) alcança mais. `limparTudo` zera o
+  histórico, e é aí que tudo é revogado de fato.
+
+O estado inicial já vem com plataforma, destino, formato e layout válidos —
+nada é `null`. É isso que permite a tela única funcionar sem gating.
 
 ## Como verificar
 
@@ -95,7 +116,7 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
 - **Zonas seguras (250 px) em Stories/Reels não são corte.** Nada é cortado em
   9:16 — as faixas marcam onde o app desenha perfil, legenda e botões **por
   cima**. O aviso de recorte de verdade é outro: o grid do perfil do Instagram
-  corta para 3:4, avisado na etapa 4.
+  corta para 3:4, avisado na aba Formato.
 - **`offsetX = 1` revela o lado esquerdo da foto**, porque o offset move a
   imagem para a direita. É manipulação direta, não é bug.
 - **Ícones de marca saíram do lucide-react.** Instagram/Facebook usam `Camera` e

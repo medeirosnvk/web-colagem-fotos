@@ -4,267 +4,381 @@ import { formatoPorId, formatosDe } from '../data/formatos'
 import { layoutPorId, layoutsDe } from '../data/layouts'
 import { clamp } from '../lib/cover'
 
-export const TOTAL_ETAPAS = 6
+/** Quantos passos de histórico ficam guardados. */
+const LIMITE_HISTORICO = 60
 
-export type Etapa = 1 | 2 | 3 | 4 | 5 | 6
+/** Janela em que duas edições do mesmo tipo viram um único passo de desfazer. */
+const JANELA_FUSAO_MS = 700
 
-interface EstadoColagem {
-  etapa: Etapa
+/**
+ * O que o desfazer/refazer restaura. É o "documento": tudo que muda a colagem.
+ * Seleção de slot e o próprio histórico ficam de fora — são estado de tela.
+ */
+interface Documento {
   imagens: Imagem[]
-  plataforma: Plataforma | null
-  destino: Destino | null
+  plataforma: Plataforma
+  destino: Destino
   corFundo: CorFundo
-  formatoId: string | null
-  layoutId: string | null
+  formatoId: string
+  layoutId: string
   slots: EstadoSlot[]
-  slotSelecionado: string | null
-  permitirReduzir: boolean
   gap: number
   margem: number
+  permitirReduzir: boolean
+}
 
-  irPara: (etapa: Etapa) => void
-  proxima: () => void
-  anterior: () => void
+interface EstadoColagem extends Documento {
+  slotSelecionado: string | null
+  passado: Documento[]
+  futuro: Documento[]
+
+  desfazer: () => void
+  refazer: () => void
 
   adicionarImagens: (imagens: Imagem[]) => void
   removerImagem: (id: string) => void
   limparTudo: () => void
 
-  definirPlataformaDestino: (plataforma: Plataforma, destino: Destino) => void
+  definirPlataforma: (plataforma: Plataforma) => void
+  definirDestino: (destino: Destino) => void
   definirCorFundo: (cor: CorFundo) => void
   definirFormato: (formatoId: string) => void
   definirLayout: (layoutId: string) => void
   definirEspacamento: (gap: number, margem: number) => void
 
   atribuirImagem: (slotId: string, imagemId: string) => void
+  usarImagem: (imagemId: string) => void
   trocarSlots: (a: string, b: string) => void
   limparSlot: (slotId: string) => void
   selecionarSlot: (slotId: string | null) => void
   ajustarSlot: (slotId: string, patch: Partial<Omit<EstadoSlot, 'slotId'>>) => void
   redefinirSlot: (slotId: string) => void
   preencherAutomaticamente: () => void
+  esvaziarSlots: () => void
   alternarPermitirReduzir: () => void
 }
 
 /**
- * Última etapa acessível, dado o estado atual. Como seletor derivado (e não
- * como método), qualquer componente que a use re-renderiza quando o
- * pré-requisito muda.
+ * Toda imagem já carregada, viva ou não. O histórico pode segurar imagens que
+ * saíram da bandeja, então o Object URL só é revogado quando nenhum ponto do
+ * histórico alcança mais aquela imagem.
  */
-export function maxEtapaLiberada(s: {
-  imagens: unknown[]
-  plataforma: unknown
-  destino: unknown
-  formatoId: unknown
-  layoutId: unknown
-  slots: EstadoSlot[]
-}): Etapa {
-  if (s.imagens.length === 0) return 1
-  if (!s.plataforma || !s.destino) return 2
-  if (!s.formatoId || !s.layoutId) return 4
-  if (!s.slots.some((x) => x.imagemId)) return 5
-  return 6
+const registro = new Map<string, Imagem>()
+
+function coletarLixo(s: EstadoColagem) {
+  const vivos = new Set<string>()
+  for (const doc of [s, ...s.passado, ...s.futuro]) {
+    for (const img of doc.imagens) vivos.add(img.id)
+  }
+  for (const [id, img] of registro) {
+    if (!vivos.has(id)) {
+      URL.revokeObjectURL(img.url)
+      registro.delete(id)
+    }
+  }
 }
 
-function slotsVazios(layoutId: string | null): EstadoSlot[] {
+function documento(s: EstadoColagem): Documento {
+  return {
+    imagens: s.imagens,
+    plataforma: s.plataforma,
+    destino: s.destino,
+    corFundo: s.corFundo,
+    formatoId: s.formatoId,
+    layoutId: s.layoutId,
+    slots: s.slots,
+    gap: s.gap,
+    margem: s.margem,
+    permitirReduzir: s.permitirReduzir,
+  }
+}
+
+function slotsVazios(layoutId: string): EstadoSlot[] {
   const layout = layoutPorId(layoutId)
   if (!layout) return []
   return layout.slots.map((s) => ({ slotId: s.id, escala: 1, offsetX: 0, offsetY: 0 }))
 }
 
-export const useColagemStore = create<EstadoColagem>((set, get) => ({
-  etapa: 1,
-  imagens: [],
-  plataforma: null,
-  destino: null,
-  corFundo: '#FFFFFF',
-  formatoId: null,
-  layoutId: null,
-  slots: [],
-  slotSelecionado: null,
-  permitirReduzir: false,
-  gap: 12,
-  margem: 0,
+/**
+ * Troca o layout preservando as imagens já posicionadas, na ordem. Cada layout
+ * traz o próprio espaçamento: grades pedem gap, layouts livres já embutem o
+ * respiro nas coordenadas.
+ */
+function trocarLayout(s: Documento, layoutId: string): Partial<Documento> {
+  const layout = layoutPorId(layoutId)
+  if (!layout) return {}
 
-  irPara: (etapa) => {
-    if (etapa <= maxEtapaLiberada(get())) set({ etapa })
-  },
-  proxima: () => {
-    const proxima = Math.min(TOTAL_ETAPAS, get().etapa + 1) as Etapa
-    if (proxima <= maxEtapaLiberada(get())) set({ etapa: proxima })
-  },
-  anterior: () => set({ etapa: Math.max(1, get().etapa - 1) as Etapa }),
+  const novos = slotsVazios(layoutId)
+  const usadas = s.slots.filter((x) => x.imagemId)
+  novos.forEach((novo, i) => {
+    const antiga = usadas[i]
+    if (antiga) {
+      novo.imagemId = antiga.imagemId
+      novo.escala = antiga.escala
+      novo.offsetX = antiga.offsetX
+      novo.offsetY = antiga.offsetY
+    }
+  })
 
-  adicionarImagens: (novas) => set((s) => ({ imagens: [...s.imagens, ...novas] })),
+  return { layoutId, slots: novos, gap: layout.gap, margem: layout.margem }
+}
 
-  removerImagem: (id) =>
+/** Troca o formato; se o layout atual não serve para a nova proporção, adota o primeiro que serve. */
+function trocarFormato(s: Documento, formatoId: string): Partial<Documento> {
+  const formato = formatoPorId(formatoId)
+  if (!formato) return {}
+
+  const validos = layoutsDe(formato.proporcao)
+  if (validos.some((l) => l.id === s.layoutId)) return { formatoId }
+  return { formatoId, ...trocarLayout(s, validos[0].id) }
+}
+
+function documentoInicial(): Documento {
+  const opcoes = formatosDe('instagram', 'feed')
+  const formato = opcoes.find((f) => f.recomendado) ?? opcoes[0]
+  const layout = layoutsDe(formato.proporcao)[0]
+
+  return {
+    imagens: [],
+    plataforma: 'instagram',
+    destino: 'feed',
+    corFundo: '#FFFFFF',
+    formatoId: formato.id,
+    layoutId: layout.id,
+    slots: slotsVazios(layout.id),
+    gap: layout.gap,
+    margem: layout.margem,
+    permitirReduzir: false,
+  }
+}
+
+/** Mantém a seleção só se o slot ainda existir no documento restaurado. */
+function selecaoValida(doc: Documento, slotId: string | null): string | null {
+  return doc.slots.some((s) => s.slotId === slotId) ? slotId : null
+}
+
+export const useColagemStore = create<EstadoColagem>((set, get) => {
+  let ultimaTag: string | null = null
+  let ultimoEm = 0
+
+  /**
+   * Aplica uma mudança no documento empilhando um passo de histórico. Duas
+   * edições seguidas com a mesma `tag` (arrastar uma foto, mexer num slider)
+   * viram um passo só — senão o desfazer andaria de pixel em pixel.
+   */
+  function editar(
+    fn: (s: EstadoColagem) => (Partial<Documento> & { slotSelecionado?: string | null }) | null,
+    tag?: string,
+  ) {
     set((s) => {
-      const alvo = s.imagens.find((i) => i.id === id)
-      if (alvo) URL.revokeObjectURL(alvo.url)
-      return {
+      const patch = fn(s)
+      if (!patch) return {}
+
+      const agora = Date.now()
+      const funde = tag != null && tag === ultimaTag && agora - ultimoEm < JANELA_FUSAO_MS
+      ultimaTag = tag ?? null
+      ultimoEm = agora
+
+      const passado = funde
+        ? s.passado
+        : [...s.passado, documento(s)].slice(-LIMITE_HISTORICO)
+
+      return { ...patch, passado, futuro: [] }
+    })
+    coletarLixo(get())
+  }
+
+  return {
+    ...documentoInicial(),
+    slotSelecionado: null,
+    passado: [],
+    futuro: [],
+
+    desfazer: () => {
+      const s = get()
+      const alvo = s.passado[s.passado.length - 1]
+      if (!alvo) return
+      ultimaTag = null
+      set({
+        ...alvo,
+        passado: s.passado.slice(0, -1),
+        futuro: [...s.futuro, documento(s)],
+        slotSelecionado: selecaoValida(alvo, s.slotSelecionado),
+      })
+      coletarLixo(get())
+    },
+
+    refazer: () => {
+      const s = get()
+      const alvo = s.futuro[s.futuro.length - 1]
+      if (!alvo) return
+      ultimaTag = null
+      set({
+        ...alvo,
+        passado: [...s.passado, documento(s)].slice(-LIMITE_HISTORICO),
+        futuro: s.futuro.slice(0, -1),
+        slotSelecionado: selecaoValida(alvo, s.slotSelecionado),
+      })
+      coletarLixo(get())
+    },
+
+    adicionarImagens: (novas) => {
+      novas.forEach((i) => registro.set(i.id, i))
+      editar((s) => (novas.length === 0 ? null : { imagens: [...s.imagens, ...novas] }))
+    },
+
+    removerImagem: (id) =>
+      editar((s) => ({
         imagens: s.imagens.filter((i) => i.id !== id),
         slots: s.slots.map((slot) =>
-          slot.imagemId === id
-            ? { slotId: slot.slotId, escala: 1, offsetX: 0, offsetY: 0 }
-            : slot,
+          slot.imagemId === id ? { slotId: slot.slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
         ),
-      }
-    }),
+      })),
 
-  limparTudo: () =>
-    set((s) => {
-      s.imagens.forEach((i) => URL.revokeObjectURL(i.url))
-      return {
-        etapa: 1,
-        imagens: [],
-        plataforma: null,
-        destino: null,
-        formatoId: null,
-        layoutId: null,
-        slots: [],
-        slotSelecionado: null,
-      }
-    }),
+    /** Recomeço do zero: descarta o histórico, então as imagens somem de vez. */
+    limparTudo: () => {
+      ultimaTag = null
+      set({ ...documentoInicial(), slotSelecionado: null, passado: [], futuro: [] })
+      coletarLixo(get())
+    },
 
-  definirPlataformaDestino: (plataforma, destino) => {
-    const atual = get()
-    const opcoes = formatosDe(plataforma, destino)
-    const aindaVale = opcoes.some((f) => f.id === atual.formatoId)
-    const escolhido = aindaVale
-      ? atual.formatoId
-      : (opcoes.find((f) => f.recomendado) ?? opcoes[0])?.id ?? null
+    definirPlataforma: (plataforma) =>
+      editar((s) => {
+        if (s.plataforma === plataforma) return null
+        const opcoes = formatosDe(plataforma, s.destino)
+        const escolhido = opcoes.some((f) => f.id === s.formatoId)
+          ? s.formatoId
+          : (opcoes.find((f) => f.recomendado) ?? opcoes[0]).id
+        return { plataforma, ...trocarFormato(s, escolhido) }
+      }),
 
-    const formato = formatoPorId(escolhido)
-    const layoutValido =
-      formato && layoutsDe(formato.proporcao).some((l) => l.id === atual.layoutId)
+    definirDestino: (destino) =>
+      editar((s) => {
+        if (s.destino === destino) return null
+        const opcoes = formatosDe(s.plataforma, destino)
+        const escolhido = opcoes.some((f) => f.id === s.formatoId)
+          ? s.formatoId
+          : (opcoes.find((f) => f.recomendado) ?? opcoes[0]).id
+        return { destino, ...trocarFormato(s, escolhido) }
+      }),
 
-    set({
-      plataforma,
-      destino,
-      formatoId: escolhido,
-      layoutId: layoutValido ? atual.layoutId : null,
-      slots: layoutValido ? atual.slots : [],
-    })
-  },
+    definirCorFundo: (corFundo) => editar((s) => (s.corFundo === corFundo ? null : { corFundo })),
 
-  definirCorFundo: (corFundo) => set({ corFundo }),
+    definirFormato: (formatoId) =>
+      editar((s) => (s.formatoId === formatoId ? null : trocarFormato(s, formatoId))),
 
-  definirFormato: (formatoId) => {
-    const atual = get()
-    const formato = formatoPorId(formatoId)
-    const layoutValido =
-      formato && layoutsDe(formato.proporcao).some((l) => l.id === atual.layoutId)
-    set({
-      formatoId,
-      layoutId: layoutValido ? atual.layoutId : null,
-      slots: layoutValido ? atual.slots : [],
-    })
-  },
+    definirLayout: (layoutId) =>
+      editar((s) => {
+        if (s.layoutId === layoutId) return null
+        const patch = trocarLayout(s, layoutId)
+        return { ...patch, slotSelecionado: patch.slots?.[0]?.slotId ?? null }
+      }),
 
-  definirLayout: (layoutId) => {
-    const anterior = get().slots
-    const novos = slotsVazios(layoutId)
-    const layout = layoutPorId(layoutId)
-    // Preserva as imagens já posicionadas, na ordem, ao trocar de layout.
-    const usadas = anterior.filter((s) => s.imagemId)
-    novos.forEach((s, i) => {
-      const antiga = usadas[i]
-      if (antiga) {
-        s.imagemId = antiga.imagemId
-        s.escala = antiga.escala
-        s.offsetX = antiga.offsetX
-        s.offsetY = antiga.offsetY
-      }
-    })
-    // Cada layout traz o próprio espaçamento: grades pedem gap, layouts livres
-    // já embutem o respiro nas coordenadas.
-    set({
-      layoutId,
-      slots: novos,
-      slotSelecionado: novos[0]?.slotId ?? null,
-      gap: layout?.gap ?? 12,
-      margem: layout?.margem ?? 0,
-    })
-  },
+    definirEspacamento: (gap, margem) =>
+      editar((s) => (s.gap === gap && s.margem === margem ? null : { gap, margem }), 'espacamento'),
 
-  definirEspacamento: (gap, margem) => set({ gap, margem }),
+    atribuirImagem: (slotId, imagemId) =>
+      editar((s) => ({
+        slots: s.slots.map((slot) =>
+          slot.slotId === slotId ? { slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+        ),
+        slotSelecionado: slotId,
+      })),
 
-  atribuirImagem: (slotId, imagemId) =>
-    set((s) => ({
-      slots: s.slots.map((slot) =>
-        slot.slotId === slotId
-          ? { slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 }
-          : slot,
-      ),
-      slotSelecionado: slotId,
-    })),
-
-  trocarSlots: (a, b) =>
-    set((s) => {
-      const sa = s.slots.find((x) => x.slotId === a)
-      const sb = s.slots.find((x) => x.slotId === b)
-      if (!sa || !sb) return s
-      return {
-        slots: s.slots.map((slot) => {
-          if (slot.slotId === a) return { ...sb, slotId: a }
-          if (slot.slotId === b) return { ...sa, slotId: b }
-          return slot
-        }),
-      }
-    }),
-
-  limparSlot: (slotId) =>
-    set((s) => ({
-      slots: s.slots.map((slot) =>
-        slot.slotId === slotId
-          ? { slotId, escala: 1, offsetX: 0, offsetY: 0 }
-          : slot,
-      ),
-    })),
-
-  selecionarSlot: (slotSelecionado) => set({ slotSelecionado }),
-
-  ajustarSlot: (slotId, patch) =>
-    set((s) => ({
-      slots: s.slots.map((slot) => {
-        if (slot.slotId !== slotId) return slot
-        const minimo = s.permitirReduzir ? 0.3 : 1
+    /** Clique numa miniatura: vai para o slot selecionado, ou para o primeiro vazio. */
+    usarImagem: (imagemId) =>
+      editar((s) => {
+        const selecionado = s.slots.find((x) => x.slotId === s.slotSelecionado)
+        const alvo = selecionado?.imagemId ? selecionado : (s.slots.find((x) => !x.imagemId) ?? selecionado)
+        if (!alvo) return null
         return {
-          ...slot,
-          ...patch,
-          escala: clamp(patch.escala ?? slot.escala, minimo, 5),
-          offsetX: clamp(patch.offsetX ?? slot.offsetX, -1, 1),
-          offsetY: clamp(patch.offsetY ?? slot.offsetY, -1, 1),
+          slots: s.slots.map((slot) =>
+            slot.slotId === alvo.slotId
+              ? { slotId: alvo.slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 }
+              : slot,
+          ),
+          slotSelecionado: alvo.slotId,
         }
       }),
-    })),
 
-  redefinirSlot: (slotId) =>
-    set((s) => ({
-      slots: s.slots.map((slot) =>
-        slot.slotId === slotId ? { ...slot, escala: 1, offsetX: 0, offsetY: 0 } : slot,
-      ),
-    })),
+    trocarSlots: (a, b) =>
+      editar((s) => {
+        const sa = s.slots.find((x) => x.slotId === a)
+        const sb = s.slots.find((x) => x.slotId === b)
+        if (!sa || !sb) return null
+        return {
+          slots: s.slots.map((slot) => {
+            if (slot.slotId === a) return { ...sb, slotId: a }
+            if (slot.slotId === b) return { ...sa, slotId: b }
+            return slot
+          }),
+        }
+      }),
 
-  preencherAutomaticamente: () =>
-    set((s) => {
-      const disponiveis = s.imagens.map((i) => i.id)
-      let cursor = 0
-      return {
-        slots: s.slots.map((slot) => {
-          if (slot.imagemId) return slot
-          const id = disponiveis[cursor++]
-          return id ? { slotId: slot.slotId, imagemId: id, escala: 1, offsetX: 0, offsetY: 0 } : slot
+    limparSlot: (slotId) =>
+      editar((s) => ({
+        slots: s.slots.map((slot) =>
+          slot.slotId === slotId ? { slotId, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+        ),
+      })),
+
+    selecionarSlot: (slotSelecionado) => set({ slotSelecionado }),
+
+    ajustarSlot: (slotId, patch) =>
+      editar(
+        (s) => ({
+          slots: s.slots.map((slot) => {
+            if (slot.slotId !== slotId) return slot
+            const minimo = s.permitirReduzir ? 0.3 : 1
+            return {
+              ...slot,
+              ...patch,
+              escala: clamp(patch.escala ?? slot.escala, minimo, 5),
+              offsetX: clamp(patch.offsetX ?? slot.offsetX, -1, 1),
+              offsetY: clamp(patch.offsetY ?? slot.offsetY, -1, 1),
+            }
+          }),
         }),
-      }
-    }),
+        `ajuste:${slotId}`,
+      ),
 
-  alternarPermitirReduzir: () =>
-    set((s) => {
-      const permitir = !s.permitirReduzir
-      return {
-        permitirReduzir: permitir,
-        slots: permitir ? s.slots : s.slots.map((x) => ({ ...x, escala: Math.max(1, x.escala) })),
-      }
-    }),
-}))
+    redefinirSlot: (slotId) =>
+      editar((s) => ({
+        slots: s.slots.map((slot) =>
+          slot.slotId === slotId ? { ...slot, escala: 1, offsetX: 0, offsetY: 0 } : slot,
+        ),
+      })),
+
+    preencherAutomaticamente: () =>
+      editar((s) => {
+        const usadas = new Set(s.slots.map((x) => x.imagemId).filter(Boolean))
+        const disponiveis = s.imagens.map((i) => i.id).filter((id) => !usadas.has(id))
+        if (disponiveis.length === 0 || s.slots.every((x) => x.imagemId)) return null
+
+        let cursor = 0
+        return {
+          slots: s.slots.map((slot) => {
+            if (slot.imagemId) return slot
+            const id = disponiveis[cursor++]
+            return id ? { slotId: slot.slotId, imagemId: id, escala: 1, offsetX: 0, offsetY: 0 } : slot
+          }),
+        }
+      }),
+
+    esvaziarSlots: () =>
+      editar((s) =>
+        s.slots.every((x) => !x.imagemId)
+          ? null
+          : { slots: s.slots.map((x) => ({ slotId: x.slotId, escala: 1, offsetX: 0, offsetY: 0 })) },
+      ),
+
+    alternarPermitirReduzir: () =>
+      editar((s) => {
+        const permitir = !s.permitirReduzir
+        return {
+          permitirReduzir: permitir,
+          slots: permitir ? s.slots : s.slots.map((x) => ({ ...x, escala: Math.max(1, x.escala) })),
+        }
+      }),
+  }
+})
