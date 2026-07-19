@@ -62,7 +62,7 @@ interface EstadoColagem extends Documento {
   ajustarSlot: (slotId: string, patch: Partial<Omit<EstadoSlot, 'slotId'>>) => void
   redefinirSlot: (slotId: string) => void
   preencherAutomaticamente: () => void
-  esvaziarSlots: () => void
+  esvaziarLamina: (id?: string) => void
   alternarPermitirReduzir: () => void
 }
 
@@ -487,14 +487,27 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         )
       }),
 
-    esvaziarSlots: () =>
-      editar((s) =>
-        naLaminaAtiva(s, (l) =>
-          l.slots.every((x) => !x.imagemId)
-            ? null
-            : { slots: l.slots.map((x) => ({ slotId: x.slotId, escala: 1, offsetX: 0, offsetY: 0 })) },
-        ),
-      ),
+    /** Tira as fotos de uma lâmina sem mexer no layout. Sem `id`, a ativa. */
+    esvaziarLamina: (id) =>
+      editar((s) => {
+        const alvo = s.laminas.find((l) => l.id === (id ?? s.laminaAtivaId))
+        if (!alvo || alvo.slots.every((x) => !x.imagemId)) return null
+        return {
+          laminas: s.laminas.map((l) =>
+            l.id === alvo.id
+              ? {
+                  ...l,
+                  slots: l.slots.map((x) => ({
+                    slotId: x.slotId,
+                    escala: 1,
+                    offsetX: 0,
+                    offsetY: 0,
+                  })),
+                }
+              : l,
+          ),
+        }
+      }),
 
     alternarPermitirReduzir: () =>
       editar((s) => {

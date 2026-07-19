@@ -1,4 +1,5 @@
-import { Copy, Layers, Plus, Trash2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { Copy, Eraser, Layers, Plus, Trash2 } from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../store/useColagemStore'
 import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
@@ -9,18 +10,53 @@ import type { Lamina } from '../tipos'
 const LARGURA_MINIATURA = 84
 const ALTURA_MAX_MINIATURA = 118
 
+/** Ação de uma lâmina: pequena, mas sempre visível — nada escondido no hover. */
+function Acao({
+  rotulo,
+  titulo,
+  onClick,
+  desabilitado,
+  perigo,
+  children,
+}: {
+  /** Nome curto da ação — é o que o leitor de tela anuncia. */
+  rotulo: string
+  /** Tooltip: pode explicar o efeito, o `rotulo` não deve. */
+  titulo?: string
+  onClick: () => void
+  desabilitado?: boolean
+  perigo?: boolean
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      title={titulo ?? rotulo}
+      aria-label={rotulo}
+      onClick={onClick}
+      disabled={desabilitado}
+      className={`flex flex-1 items-center justify-center rounded py-1 text-neutral-500 transition-colors hover:bg-neutral-800 disabled:pointer-events-none disabled:opacity-30 ${
+        perigo ? 'hover:text-red-400' : 'hover:text-violet-300'
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
   const ativa = useColagemStore((s) => s.laminaAtivaId === lamina.id)
   const total = useColagemStore((s) => s.laminas.length)
   const selecionar = useColagemStore((s) => s.selecionarLamina)
   const duplicar = useColagemStore((s) => s.duplicarLamina)
   const remover = useColagemStore((s) => s.removerLamina)
+  const esvaziar = useColagemStore((s) => s.esvaziarLamina)
 
   const layout = layoutPorId(lamina.layoutId)
   const preenchidos = lamina.slots.filter((s) => s.imagemId).length
 
   return (
-    <div className="group relative">
+    <div className="relative">
       <button
         type="button"
         onClick={() => selecionar(lamina.id)}
@@ -49,25 +85,27 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
         </span>
       </button>
 
-      <div className="absolute top-2 right-2 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
-        <button
-          type="button"
-          onClick={() => duplicar(lamina.id)}
-          title="Duplicar lâmina"
-          className="rounded bg-black/75 p-1 text-neutral-300 hover:text-violet-300"
+      <div className="mt-0.5 flex gap-0.5">
+        <Acao
+          rotulo={`Esvaziar lâmina ${numero}`}
+          titulo={`Esvaziar lâmina ${numero} — tira as fotos, mantém a montagem`}
+          onClick={() => esvaziar(lamina.id)}
+          desabilitado={preenchidos === 0}
         >
-          <Copy size={11} />
-        </button>
-        {total > 1 && (
-          <button
-            type="button"
-            onClick={() => remover(lamina.id)}
-            title="Remover lâmina"
-            className="rounded bg-black/75 p-1 text-neutral-300 hover:text-red-400"
-          >
-            <Trash2 size={11} />
-          </button>
-        )}
+          <Eraser size={12} />
+        </Acao>
+        <Acao rotulo={`Duplicar lâmina ${numero}`} onClick={() => duplicar(lamina.id)}>
+          <Copy size={12} />
+        </Acao>
+        <Acao
+          rotulo={`Remover lâmina ${numero}`}
+          titulo={total > 1 ? undefined : 'A última lâmina não pode ser removida'}
+          onClick={() => remover(lamina.id)}
+          desabilitado={total <= 1}
+          perigo
+        >
+          <Trash2 size={12} />
+        </Acao>
       </div>
     </div>
   )
@@ -85,7 +123,7 @@ export function PainelLaminas() {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
 
   return (
-    <aside className="flex w-28 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
+    <aside className="flex w-32 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
       <header className={`${FAIXA} gap-1.5 px-3`}>
         <Layers size={14} className="text-violet-400" />
         <h2 className="text-xs font-semibold text-neutral-200">Lâminas</h2>

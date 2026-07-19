@@ -95,8 +95,9 @@ você escrever por cima no app de publicação. O app não insere texto.
 5. **Lâminas** — o botão **+ Lâmina** na coluna da esquerda cria outra colagem no mesmo
    documento, com layout e preenchimento próprios; formato, cor de fundo e bandeja são
    compartilhados. As miniaturas são renderizadas com a mesma geometria da tela grande, então
-   mostram a colagem de verdade. Dá para duplicar e remover no hover (a última lâmina não
-   sai). **Preencher slots vazios** só usa fotos que ainda não estão em nenhuma lâmina — é
+   mostram a colagem de verdade. Cada lâmina tem três ações sempre à vista embaixo da miniatura —
+   **esvaziar** (tira as fotos, mantém a montagem), **duplicar** e **remover** — desabilitadas
+   quando não se aplicam, em vez de escondidas (a última lâmina não sai). **Preencher slots vazios** só usa fotos que ainda não estão em nenhuma lâmina — é
    assim que se distribui um álbum inteiro: adiciona lâmina, preenche, repete.
 6. **Desfazer/refazer** — `Ctrl+Z` e `Ctrl+Shift+Z` (ou os botões no topo) voltam qualquer
    coisa: trocar layout, mudar formato, mexer numa foto, adicionar ou remover uma lâmina, até

@@ -11,7 +11,7 @@ export function AbaAjuste() {
   const ajustarSlot = useColagemStore((s) => s.ajustarSlot)
   const redefinirSlot = useColagemStore((s) => s.redefinirSlot)
   const preencher = useColagemStore((s) => s.preencherAutomaticamente)
-  const esvaziar = useColagemStore((s) => s.esvaziarSlots)
+  const esvaziar = useColagemStore((s) => s.esvaziarLamina)
   const alternarPermitirReduzir = useColagemStore((s) => s.alternarPermitirReduzir)
   const definirEspacamento = useColagemStore((s) => s.definirEspacamento)
 
@@ -97,7 +97,7 @@ export function AbaAjuste() {
           >
             <Wand2 size={14} /> Preencher slots vazios
           </Botao>
-          <Botao variante="fantasma" onClick={esvaziar} className="w-full">
+          <Botao variante="fantasma" onClick={() => esvaziar()} className="w-full">
             <Eraser size={14} /> Esvaziar todos os slots
           </Botao>
         </div>
