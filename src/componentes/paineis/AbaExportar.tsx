@@ -4,6 +4,7 @@ import { useExportacaoStore } from '../../store/useExportacaoStore'
 import { formatoPorId, ROTULO_DESTINO, ROTULO_PLATAFORMA } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
 import { Botao } from '../ui/Botao'
+import { SeletorTipoArquivo } from '../SeletorTipoArquivo'
 import { Secao } from './PainelLateral'
 
 function formatarBytes(bytes: number) {
@@ -22,6 +23,7 @@ export function AbaExportar() {
 
   const exportar = useExportacaoStore((s) => s.exportar)
   const ocupado = useExportacaoStore((s) => s.ocupado)
+  const tipo = useExportacaoStore((s) => s.tipo)
   const erro = useExportacaoStore((s) => s.erro)
   const gerados = useExportacaoStore((s) => s.gerados)
 
@@ -56,36 +58,18 @@ export function AbaExportar() {
 
       <Secao titulo="Baixar">
         <div className="space-y-2">
-          <Botao
-            variante="primario"
-            className="w-full"
-            disabled={!!ocupado}
-            onClick={() => exportar(['png'])}
-          >
-            {ocupado?.length === 1 && ocupado[0] === 'png' ? (
+          <label className="block">
+            <span className="mb-1.5 block text-xs text-neutral-400">Formato do arquivo</span>
+            <SeletorTipoArquivo comDetalhe />
+          </label>
+
+          <Botao variante="primario" className="w-full" disabled={ocupado} onClick={exportar}>
+            {ocupado ? (
               <Loader2 size={15} className="animate-spin" />
             ) : (
               <Download size={15} />
             )}
-            PNG (sem perdas)
-          </Botao>
-
-          <Botao
-            variante="secundario"
-            className="w-full"
-            disabled={!!ocupado}
-            onClick={() => exportar(['jpg'])}
-          >
-            <Download size={15} /> JPG (qualidade 95%)
-          </Botao>
-
-          <Botao
-            variante="fantasma"
-            className="w-full"
-            disabled={!!ocupado}
-            onClick={() => exportar(['png', 'jpg'])}
-          >
-            Baixar os dois
+            Baixar {tipo.toUpperCase()}
           </Botao>
         </div>
 

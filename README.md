@@ -92,10 +92,12 @@ você escrever por cima no app de publicação. O app não insere texto.
 5. **Desfazer/refazer** — `Ctrl+Z` e `Ctrl+Shift+Z` (ou os botões no topo) voltam qualquer
    coisa: trocar layout, mudar formato, mexer numa foto, até remover uma foto da bandeja.
    Arrastar uma foto ou mexer num slider conta como **um** passo, não um por pixel.
-6. **Exportar** — o botão **Exportar PNG** no topo baixa direto, a qualquer momento. A aba
-   Exportar traz JPG, "baixar os dois" e o resumo do que vai ser gerado; os dois caminhos
-   compartilham o mesmo estado, então o arquivo gerado pelo botão do topo aparece listado
-   na aba. O nome sai como `colagem-{destino}-{proporcao}-{timestamp}`.
+6. **Exportar** — escolha **PNG** ou **JPG** no seletor e clique em **Exportar**, no topo, a
+   qualquer momento. Um clique baixa um arquivo: para ter os dois, exporte duas vezes. A aba
+   Exportar tem o mesmo seletor e o resumo do que vai ser gerado; os dois caminhos
+   compartilham o mesmo estado, então trocar o formato num lugar troca no outro e o arquivo
+   gerado pelo topo aparece listado na aba. O nome sai como
+   `colagem-{destino}-{proporcao}-{timestamp}`.
 
 Para conferir que a exportação não é print de tela: abra o PNG baixado e verifique que ele
 tem exatamente as dimensões da tabela acima (ex.: 1080×1350), independentemente do tamanho

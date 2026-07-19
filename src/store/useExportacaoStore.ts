@@ -12,24 +12,31 @@ import { exportarColagem, type TipoArquivo } from '../lib/exportarColagem'
  * mesmo "exportando…" e o mesmo resultado.
  */
 interface EstadoExportacao {
-  ocupado: TipoArquivo[] | null
+  /** Tipo escolhido no seletor. PNG e JPG são baixados um de cada vez. */
+  tipo: TipoArquivo
+  ocupado: boolean
   erro: string | null
   gerados: { nome: string; bytes: number }[]
-  exportar: (tipos: TipoArquivo[]) => Promise<void>
+  definirTipo: (tipo: TipoArquivo) => void
+  exportar: () => Promise<void>
 }
 
-export const useExportacaoStore = create<EstadoExportacao>((set) => ({
-  ocupado: null,
+export const useExportacaoStore = create<EstadoExportacao>((set, get) => ({
+  tipo: 'png',
+  ocupado: false,
   erro: null,
   gerados: [],
 
-  exportar: async (tipos) => {
+  definirTipo: (tipo) => set({ tipo }),
+
+  exportar: async () => {
+    const tipos: TipoArquivo[] = [get().tipo]
     const s = useColagemStore.getState()
     const formato = formatoPorId(s.formatoId)
     const layoutBase = layoutPorId(s.layoutId)
     if (!formato || !layoutBase) return
 
-    set({ ocupado: tipos, erro: null })
+    set({ ocupado: true, erro: null })
     try {
       const resultado = await exportarColagem(
         {
@@ -48,7 +55,7 @@ export const useExportacaoStore = create<EstadoExportacao>((set) => ({
         gerados: [],
       })
     } finally {
-      set({ ocupado: null })
+      set({ ocupado: false })
     }
   },
 }))
