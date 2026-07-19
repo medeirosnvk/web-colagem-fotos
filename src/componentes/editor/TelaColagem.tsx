@@ -90,16 +90,16 @@ export function TelaColagem({
             className="absolute inset-x-0 top-0 border-b border-dashed border-cyan-300/70 bg-cyan-400/10"
             style={{ height: ZONA_SEGURA_PX.topo * escala }}
           >
-            <span className="absolute bottom-1 left-2 text-[10px] font-medium text-cyan-200">
-              zona da interface (topo)
+            <span className="absolute bottom-1 left-2 rounded bg-cyan-950/85 px-1.5 py-0.5 text-[10px] font-medium text-cyan-100">
+              perfil e botões do app ficam por cima
             </span>
           </div>
           <div
             className="absolute inset-x-0 bottom-0 border-t border-dashed border-cyan-300/70 bg-cyan-400/10"
             style={{ height: ZONA_SEGURA_PX.base * escala }}
           >
-            <span className="absolute top-1 left-2 text-[10px] font-medium text-cyan-200">
-              zona da interface (base)
+            <span className="absolute top-1 left-2 rounded bg-cyan-950/85 px-1.5 py-0.5 text-[10px] font-medium text-cyan-100">
+              legenda e botões do app ficam por cima
             </span>
           </div>
         </div>

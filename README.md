@@ -76,6 +76,12 @@ você escrever por cima no app de publicação. O app não insere texto.
    para reposicionar, role o mouse (ou use o slider) para dar zoom. A alça no canto superior
    esquerdo troca fotos entre slots. Em Stories/Reels aparecem as zonas seguras pontilhadas,
    que **não** são exportadas.
+
+   > As faixas pontilhadas **não indicam corte**. Em 9:16 nada é cortado: elas marcam os
+   > ~250 px onde o Instagram/Facebook desenha perfil, horário e botões (topo) e legenda,
+   > campo de mensagem e ações (base) **por cima** da sua colagem. Evite rostos e texto ali.
+   > O único recorte real avisado pelo app é o do grid do perfil do Instagram, que corta a
+   > publicação do feed para 3:4 — esse aviso aparece na etapa 4.
 6. **Etapa 6** — baixe PNG e/ou JPG. O nome sai como
    `colagem-{destino}-{proporcao}-{timestamp}`.
 

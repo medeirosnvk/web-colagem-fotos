@@ -10,10 +10,12 @@ export function Etapa5Montagem() {
   const layout = layoutPorId(useColagemStore((s) => s.layoutId))
   const slots = useColagemStore((s) => s.slots)
   const imagens = useColagemStore((s) => s.imagens)
+  const destino = useColagemStore((s) => s.destino)
 
   if (!formato || !layout) return null
 
   const preenchidos = slots.filter((s) => s.imagemId).length
+  const temZonaSegura = destino === 'stories' || destino === 'reels'
 
   return (
     <div className="flex h-full min-h-0">
@@ -30,6 +32,14 @@ export function Etapa5Montagem() {
             <Info size={13} /> Arraste para reposicionar · role o mouse para dar zoom
           </p>
         </div>
+
+        {temZonaSegura && (
+          <p className="border-b border-neutral-800 bg-cyan-500/5 px-6 py-2 text-xs text-cyan-200/90">
+            As faixas pontilhadas <strong>não são cortadas</strong> — é onde o
+            {destino === 'reels' ? ' Reels' : ' Stories'} desenha perfil, legenda e botões por cima
+            da sua colagem. Evite rostos e texto ali.
+          </p>
+        )}
 
         <div className="flex flex-1 items-center justify-center overflow-auto p-6">
           {imagens.length === 0 ? (
