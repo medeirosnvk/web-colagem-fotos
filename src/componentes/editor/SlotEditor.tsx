@@ -7,6 +7,16 @@ import { useColagemStore } from '../../store/useColagemStore'
 
 interface Props {
   slotId: string
+  /**
+   * Chave única da instância de `TelaColagem` que desenhou este slot.
+   *
+   * Os ids de slot (`s1`, `s2`…) vêm do layout e se repetem entre lâminas, e a
+   * mesma lâmina aparece duas vezes na tela: na colagem grande e na miniatura
+   * do painel. O dnd-kit exige id único por contexto — com ids repetidos ele
+   * não acha droppable nenhum e o drop simplesmente não acontece. Por isso a
+   * chave vem da instância (via `useId`), não da lâmina.
+   */
+  instancia: string
   destino: Retangulo
   estado: EstadoSlot
   imagem?: Imagem
@@ -20,6 +30,7 @@ interface Props {
 
 export function SlotEditor({
   slotId,
+  instancia,
   destino,
   estado,
   imagem,
@@ -38,7 +49,7 @@ export function SlotEditor({
   const arraste = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null)
 
   const { setNodeRef: refSolta, isOver } = useDroppable({
-    id: `slot:${slotId}`,
+    id: `slot:${instancia}:${slotId}`,
     data: { tipo: 'slot', slotId },
     disabled: !interativo,
   })
@@ -49,7 +60,7 @@ export function SlotEditor({
     setNodeRef: refPega,
     isDragging,
   } = useDraggable({
-    id: `slotdrag:${slotId}`,
+    id: `slotdrag:${instancia}:${slotId}`,
     data: { tipo: 'slot', slotId },
     disabled: !interativo || !imagem,
   })

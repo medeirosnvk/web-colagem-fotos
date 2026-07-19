@@ -3,6 +3,7 @@ import { useDraggable } from '@dnd-kit/core'
 import { useDropzone } from 'react-dropzone'
 import { ImagePlus, Images, Loader2, ShieldCheck, X } from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
+import { FAIXA } from './ui/faixa'
 import { carregarImagens, TIPOS_ACEITOS } from '../lib/carregarImagens'
 import type { Imagem } from '../tipos'
 
@@ -80,7 +81,7 @@ export function BandejaImagens() {
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
-      <header className="flex items-center gap-2 border-b border-neutral-800 px-4 py-2.5">
+      <header className={`${FAIXA} gap-2 px-4`}>
         <Images size={15} className="text-violet-400" />
         <h2 className="text-sm font-semibold text-neutral-200">Suas fotos</h2>
         <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-400">

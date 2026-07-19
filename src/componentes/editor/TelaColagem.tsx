@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId, ZONA_SEGURA_PX } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
@@ -28,6 +29,9 @@ export function TelaColagem({
   mostrarZonaSegura?: boolean
   lamina?: Lamina
 }) {
+  // Identidade desta instância: a mesma lâmina pode estar na tela grande e
+  // na miniatura do painel ao mesmo tempo, e os ids do dnd-kit precisam diferir.
+  const instancia = useId()
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
   const ativa = useColagemStore(laminaAtiva)
   const corFundo = useColagemStore((s) => s.corFundo)
@@ -66,6 +70,7 @@ export function TelaColagem({
           <SlotEditor
             key={s.id}
             slotId={s.id}
+            instancia={instancia}
             numero={i + 1}
             destino={retanguloDoSlot(s, layout, formato.largura, formato.altura)}
             estado={estado}

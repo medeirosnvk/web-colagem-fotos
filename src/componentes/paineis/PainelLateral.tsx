@@ -3,6 +3,7 @@ import { Crop, LayoutGrid, SlidersHorizontal } from 'lucide-react'
 import { AbaFormato } from './AbaFormato'
 import { AbaLayout } from './AbaLayout'
 import { AbaAjuste } from './AbaAjuste'
+import { ALTURA_FAIXA } from '../ui/faixa'
 
 // A exportação não é uma aba: mora nos controles do topo, disponível o tempo
 // todo, sem tirar o usuário de onde ele está.
@@ -31,14 +32,14 @@ export function PainelLateral() {
 
   return (
     <aside className="flex w-80 shrink-0 flex-col border-l border-neutral-800 bg-neutral-950">
-      <nav className="grid grid-cols-3 border-b border-neutral-800">
+      <nav className={`grid ${ALTURA_FAIXA} shrink-0 grid-cols-3 border-b border-neutral-800`}>
         {ABAS.map(({ id, rotulo, Icone }) => (
           <button
             key={id}
             type="button"
             onClick={() => setAba(id)}
             aria-current={aba === id ? 'page' : undefined}
-            className={`flex flex-col items-center gap-1 border-b-2 px-1 py-2.5 text-[11px] transition-colors ${
+            className={`flex h-full items-center justify-center gap-1.5 border-b-2 px-1 text-[11px] transition-colors ${
               aba === id
                 ? 'border-violet-500 text-violet-300'
                 : 'border-transparent text-neutral-500 hover:bg-neutral-900 hover:text-neutral-300'

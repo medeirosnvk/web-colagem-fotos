@@ -4,6 +4,7 @@ import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
 import { useMedidas } from '../lib/useMedidas'
 import { TelaColagem } from './editor/TelaColagem'
+import { FAIXA } from './ui/faixa'
 
 /** Respiro entre a colagem e as bordas da área central. */
 const FOLGA = 48
@@ -27,7 +28,7 @@ export function AreaColagem() {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex items-center justify-between gap-4 border-b border-neutral-800 px-6 py-2.5">
+      <div className={`${FAIXA} justify-between gap-4 px-6`}>
         <p className="truncate text-xs text-neutral-400">
           {totalLaminas > 1 && (
             <>

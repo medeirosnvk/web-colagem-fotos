@@ -138,6 +138,17 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
 
 ## Detalhes que costumam confundir
 
+- **Os ids do dnd-kit precisam ser únicos por instância na tela, não por
+  slot.** Os ids de slot (`s1`, `s2`…) vêm do layout e se repetem entre
+  lâminas — e a mesma lâmina aparece duas vezes de uma vez: na colagem grande
+  e na miniatura do painel. Com id repetido o dnd-kit não acha droppable
+  nenhum e o `over` volta `null`: o arrasto simplesmente não faz nada, **sem
+  erro no console**. Por isso `TelaColagem` gera um `useId()` e o repassa como
+  `instancia` para os ids de `SlotEditor`. `disabled: true` nas miniaturas não
+  basta — o id continua registrado.
+- **As faixas de cabeçalho das quatro colunas vêm de `ui/faixa.ts`.** Elas
+  formam uma linha só de ponta a ponta; se uma usar padding próprio em vez da
+  altura fixa, o alinhamento quebra.
 - **A exportação não é uma etapa nem uma aba** — é o seletor de formato mais o
   botão, no topo, disponíveis o tempo todo. O estado dela (`tipo`, `ocupado`,
   `erro`, `gerados`) mora num store próprio porque seletor e botão são

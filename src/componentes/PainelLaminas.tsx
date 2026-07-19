@@ -3,6 +3,7 @@ import { laminaAtiva, useColagemStore } from '../store/useColagemStore'
 import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
 import { TelaColagem } from './editor/TelaColagem'
+import { FAIXA } from './ui/faixa'
 import type { Lamina } from '../tipos'
 
 const LARGURA_MINIATURA = 84
@@ -85,7 +86,7 @@ export function PainelLaminas() {
 
   return (
     <aside className="flex w-28 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
-      <header className="flex items-center gap-1.5 border-b border-neutral-800 px-3 py-2.5">
+      <header className={`${FAIXA} gap-1.5 px-3`}>
         <Layers size={14} className="text-violet-400" />
         <h2 className="text-xs font-semibold text-neutral-200">Lâminas</h2>
         <span className="rounded-full bg-neutral-800 px-1.5 text-[10px] text-neutral-400">
