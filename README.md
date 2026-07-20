@@ -5,6 +5,8 @@ Não existe backend: as imagens são lidas via Object URL, a colagem é desenhad
 `HTMLCanvasElement` e o arquivo é salvo direto pelo navegador. Nenhum byte de imagem
 trafega pela rede.
 
+![O Phrame com três lâminas montadas e o catálogo de layouts aberto](docs/phrame.png)
+
 Tudo acontece numa **tela só**: bandeja de fotos e pilha de lâminas à esquerda, colagem no
 centro, painel com abas (Formato · Layout · Ajustes) à direita e a exportação no topo. Um
 documento tem **várias lâminas** — cada uma com seu layout e preenchimento, todas
