@@ -34,6 +34,7 @@ npm run dev
 | `src/componentes/PainelLaminas.tsx` | Pilha de lâminas: miniaturas reais, duplicar/remover e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro da tela: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
+| `src/componentes/ui/` | Peças compartilhadas: `Botao`, `Logo` (a marca), `faixa` (altura dos cabeçalhos) |
 
 O editor e a exportação usam **a mesma** função de geometria (`cover.ts`); o editor apenas
 multiplica tudo por uma escala de preview. É isso que garante que o arquivo exportado

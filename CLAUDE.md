@@ -53,13 +53,17 @@ componentes também são em português. Mantenha esse padrão.
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1), agrupados por estilo |
 | `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
 | `src/store/useExportacaoStore.ts` | Estado da exportação — fora do documento, fora do desfazer |
+| `src/store/useTemaStore.ts` | Tema claro/escuro, aplicado como classe no `<html>` |
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
+| `src/lib/layoutEfetivo.ts` | Aplica gap e margem do usuário sobre o layout do catálogo |
+| `src/lib/useMedidas.ts` | Mede um elemento (ResizeObserver) — a colagem não tem tamanho fixo |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
 | `src/componentes/PainelLaminas.tsx` | Pilha de lâminas, com miniaturas reais e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
+| `src/componentes/ui/` | Peças compartilhadas: `Botao`, `Logo`, `faixa` (altura dos cabeçalhos) |
 
 ### Lâminas
 
