@@ -16,6 +16,7 @@ export function AreaColagem() {
   const totalLaminas = useColagemStore((s) => s.laminas.length)
   const temImagens = useColagemStore((s) => s.imagens.length > 0)
   const destino = useColagemStore((s) => s.destino)
+  const selecionarSlot = useColagemStore((s) => s.selecionarSlot)
 
   const { ref, largura, altura } = useMedidas<HTMLDivElement>()
 
@@ -58,7 +59,16 @@ export function AreaColagem() {
         </p>
       )}
 
-      <div ref={ref} className="relative min-h-0 flex-1 overflow-hidden">
+      {/*
+        Fundo da área: clicar aqui desseleciona. As fotos param o pointerdown
+        antes de chegar neste ponto; os vãos da colagem e os slots vazios não,
+        porque ali é "fora da imagem".
+      */}
+      <div
+        ref={ref}
+        onPointerDown={() => selecionarSlot(null)}
+        className="relative min-h-0 flex-1 overflow-hidden"
+      >
         {largura > 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <TelaColagem

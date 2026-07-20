@@ -90,6 +90,10 @@ export function SlotEditor({
 
   function aoApontar(e: PointerEvent<HTMLDivElement>) {
     if (!interativo || !imagem) return
+
+    // Clique numa foto não pode chegar ao fundo da área da colagem, que
+    // desseleciona. Slot vazio não para o evento: ali é "fora da imagem".
+    e.stopPropagation()
     inicio.current = { x: e.clientX, y: e.clientY }
 
     // Slot não selecionado: quem manda no gesto é o dnd-kit (levar para outro

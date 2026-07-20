@@ -174,6 +174,12 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
   substituiria o do sensor e o arrasto pararia de funcionar em silêncio.
   A alça continua movendo a foto mesmo com o slot selecionado, e por isso é um
   segundo `useDraggable` com id próprio.
+  Clicar **fora da imagem** desseleciona: o fundo da `AreaColagem` chama
+  `selecionarSlot(null)` no pointerdown, e `SlotEditor` só interrompe a
+  propagação quando o slot tem foto — em slot vazio e nos vãos da colagem o
+  evento sobe e desseleciona, que é o esperado. O desselecionar é escopado à
+  área da colagem de propósito: mexer nos sliders do painel não pode tirar a
+  seleção da foto que se está ajustando.
 - **`offsetX = 1` revela o lado esquerdo da foto**, porque o offset move a
   imagem para a direita. É manipulação direta, não é bug.
 - **Ícones de marca saíram do lucide-react.** Instagram/Facebook usam `Camera` e

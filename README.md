@@ -87,7 +87,8 @@ você escrever por cima no app de publicação. O app não insere texto.
    ela de lugar** com o slot onde você soltar; **clique primeiro para selecionar e aí o
    arrasto reposiciona** a imagem dentro do slot. Role o mouse (ou use o slider da aba
    Ajustes) para dar zoom. A alça no canto superior esquerdo troca de lugar mesmo com a foto
-   selecionada. Em Stories/Reels aparecem as zonas seguras pontilhadas, que **não**
+   selecionada. Clicar fora da imagem — nos vãos da colagem, num slot vazio ou na área em
+   volta — desseleciona. Em Stories/Reels aparecem as zonas seguras pontilhadas, que **não**
    são exportadas.
 
    > As faixas pontilhadas **não indicam corte**. Em 9:16 nada é cortado: elas marcam os
