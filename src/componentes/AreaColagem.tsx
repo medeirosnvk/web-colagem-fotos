@@ -8,6 +8,7 @@ import { FAIXA } from './ui/faixa'
 
 /** Respiro entre a colagem e as bordas da área central. */
 const FOLGA = 48
+const FOLGA_ESTREITA = 16
 
 export function AreaColagem() {
   const formato = formatoPorId(useColagemStore((s) => s.formatoId))
@@ -26,6 +27,7 @@ export function AreaColagem() {
   const slots = lamina.slots
   const preenchidos = slots.filter((s) => s.imagemId).length
   const temZonaSegura = destino === 'stories' || destino === 'reels'
+  const folga = largura < 560 ? FOLGA_ESTREITA : FOLGA
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -72,8 +74,8 @@ export function AreaColagem() {
         {largura > 0 && (
           <div className="absolute inset-0 flex items-center justify-center">
             <TelaColagem
-              larguraMax={Math.max(120, largura - FOLGA)}
-              alturaMax={Math.max(120, altura - FOLGA)}
+              larguraMax={Math.max(80, largura - folga)}
+              alturaMax={Math.max(80, altura - folga)}
             />
           </div>
         )}

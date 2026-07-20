@@ -34,6 +34,7 @@ npm run dev
 | `src/lib/exportarColagem.ts` | Render no canvas na resolução exata, downscale com pica, PNG/JPG |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
 | `src/componentes/PainelLaminas.tsx` | Pilha de lâminas: miniaturas reais, duplicar/remover e o botão de adicionar |
+| `src/componentes/PainelInferior.tsx` | Gaveta com abas usada em telas abaixo de 1024 px |
 | `src/componentes/AreaColagem.tsx` | Centro da tela: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
 | `src/componentes/ui/` | Peças compartilhadas: `Botao`, `Logo` (a marca), `faixa` (altura dos cabeçalhos) |
@@ -65,6 +66,17 @@ exportação:
 
 Os layouts de moldura/assimétricos/sobrepostos deixam áreas vazias **de propósito**, para
 você escrever por cima no app de publicação. O app não insere texto.
+
+## Telas pequenas
+
+Abaixo de 1024 px o app troca de estrutura: a colagem ocupa a tela e os painéis
+(Fotos · Lâminas · Formato · Layout · Ajustes) viram abas numa gaveta recolhível embaixo —
+tocar na aba aberta recolhe a gaveta e devolve a tela à colagem. Verificado sem rolagem
+horizontal de 344 px (Galaxy Fold) a 1440 px.
+
+Em toque, o jeito de preencher é **tocar na miniatura**: a foto vai para o slot
+selecionado e a seleção anda para o próximo vazio, então toques sucessivos preenchem
+slots sucessivos. Arrastar continua funcionando com mouse.
 
 ## Tema
 

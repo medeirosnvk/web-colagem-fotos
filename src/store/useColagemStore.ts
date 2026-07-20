@@ -387,7 +387,16 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         return patch && { ...patch, slotSelecionado: slotId }
       }),
 
-    /** Clique numa miniatura: vai para o slot selecionado, ou para o primeiro vazio. */
+    /**
+     * Clique/toque numa miniatura: vai para o slot selecionado, ou para o
+     * primeiro vazio.
+     *
+     * Depois de preencher, a seleção anda para o próximo slot vazio. Sem isso,
+     * o slot recém-preenchido continuaria selecionado e o toque seguinte
+     * **substituiria** a foto em vez de seguir adiante — o que quebra o
+     * preenchimento por toques sucessivos, que é o caminho principal no
+     * celular.
+     */
     usarImagem: (imagemId) =>
       editar((s) => {
         const atual = laminaAtiva(s)
@@ -395,14 +404,18 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         const alvo =
           selecionado?.imagemId ? selecionado : (atual.slots.find((x) => !x.imagemId) ?? selecionado)
         if (!alvo) return null
-        const patch = naLaminaAtiva(s, (l) => ({
-          slots: l.slots.map((slot) =>
-            slot.slotId === alvo.slotId
-              ? { slotId: alvo.slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 }
-              : slot,
-          ),
-        }))
-        return patch && { ...patch, slotSelecionado: alvo.slotId }
+
+        const slots = atual.slots.map((slot) =>
+          slot.slotId === alvo.slotId
+            ? { slotId: alvo.slotId, imagemId, escala: 1, offsetX: 0, offsetY: 0 }
+            : slot,
+        )
+        const proximoVazio = slots.find((x) => !x.imagemId)
+
+        return {
+          laminas: s.laminas.map((l) => (l.id === atual.id ? { ...l, slots } : l)),
+          slotSelecionado: proximoVazio?.slotId ?? alvo.slotId,
+        }
       }),
 
     trocarSlots: (a, b) =>

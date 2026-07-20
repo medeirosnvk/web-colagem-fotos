@@ -72,7 +72,7 @@ export function BotaoExportar() {
         onClick={aoClicar}
         disabled={ocupado || !temFoto}
         title={titulo}
-        className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:bg-elevado disabled:text-suave"
+        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-violet-600 px-2.5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:bg-elevado disabled:text-suave sm:px-3.5"
       >
         {ocupado ? (
           <Loader2 size={15} className="animate-spin" />
@@ -81,7 +81,10 @@ export function BotaoExportar() {
         ) : (
           <Download size={15} />
         )}
-        {ocupado ? 'Exportando…' : concluido ? 'Baixado!' : 'Exportar'}
+        {/* em tela estreita o cabeçalho não comporta o rótulo: fica só o ícone */}
+        <span className="hidden sm:inline">
+          {ocupado ? 'Exportando…' : concluido ? 'Baixado!' : 'Exportar'}
+        </span>
       </button>
     </div>
   )

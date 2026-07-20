@@ -9,7 +9,7 @@ const OPCOES: { tipo: TipoArquivo; rotulo: string; detalhe: string }[] = [
 ]
 
 const ESTILO_SELECT =
-  'appearance-none rounded-lg border border-borda-forte bg-superficie py-2 pr-8 pl-3 text-sm text-texto transition-colors hover:border-borda-forte focus:border-violet-500 focus:outline-none disabled:text-tenue'
+  'appearance-none rounded-lg border border-borda-forte bg-superficie py-2 pr-7 pl-2 text-xs text-texto transition-colors hover:border-borda-forte focus:border-violet-500 focus:outline-none disabled:text-tenue sm:pr-8 sm:pl-3 sm:text-sm'
 
 /**
  * Escopo da exportação. Só aparece quando há mais de uma lâmina — com uma só,

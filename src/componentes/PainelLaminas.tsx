@@ -112,15 +112,54 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
 }
 
 /**
+ * Lista de lâminas. Em coluna no layout amplo; em fila horizontal rolável no
+ * compacto, onde altura é o recurso escasso.
+ */
+export function ConteudoLaminas({ horizontal = false }: { horizontal?: boolean }) {
+  const laminas = useColagemStore((s) => s.laminas)
+  const adicionar = useColagemStore((s) => s.adicionarLamina)
+  const ativa = useColagemStore(laminaAtiva)
+  const formato = formatoPorId(useColagemStore((s) => s.formatoId))
+
+  const titulo = `Nova lâmina em ${formato?.proporcao ?? ''}, com o layout da atual (${
+    layoutPorId(ativa?.layoutId ?? null)?.nome ?? ''
+  })`
+
+  return (
+    <div
+      className={
+        horizontal
+          ? 'flex min-h-0 gap-2 overflow-x-auto p-3'
+          : 'min-h-0 flex-1 space-y-2 overflow-y-auto p-2'
+      }
+    >
+      {laminas.map((lamina, i) => (
+        <div key={lamina.id} className={horizontal ? 'w-24 shrink-0' : ''}>
+          <Miniatura lamina={lamina} numero={i + 1} />
+        </div>
+      ))}
+
+      <button
+        type="button"
+        onClick={adicionar}
+        title={titulo}
+        className={`flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-borda-forte text-[11px] text-suave transition-colors hover:border-violet-500 hover:text-realce-forte ${
+          horizontal ? 'w-24 shrink-0 flex-col' : 'w-full py-3'
+        }`}
+      >
+        <Plus size={13} /> Lâmina
+      </button>
+    </div>
+  )
+}
+
+/**
  * Pilha de lâminas do documento. Cada uma é uma colagem com layout e
  * preenchimento próprios; formato, cor de fundo e bandeja de fotos são
  * compartilhados.
  */
 export function PainelLaminas() {
   const laminas = useColagemStore((s) => s.laminas)
-  const adicionar = useColagemStore((s) => s.adicionarLamina)
-  const ativa = useColagemStore(laminaAtiva)
-  const formato = formatoPorId(useColagemStore((s) => s.formatoId))
 
   return (
     <aside className="flex w-32 shrink-0 flex-col border-r border-borda bg-painel">
@@ -132,22 +171,7 @@ export function PainelLaminas() {
         </span>
       </header>
 
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
-        {laminas.map((lamina, i) => (
-          <Miniatura key={lamina.id} lamina={lamina} numero={i + 1} />
-        ))}
-
-        <button
-          type="button"
-          onClick={adicionar}
-          title={`Nova lâmina em ${formato?.proporcao ?? ''}, com o layout da atual (${
-            layoutPorId(ativa?.layoutId ?? null)?.nome ?? ''
-          })`}
-          className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-borda-forte py-3 text-[11px] text-suave transition-colors hover:border-violet-500 hover:text-realce-forte"
-        >
-          <Plus size={13} /> Lâmina
-        </button>
-      </div>
+      <ConteudoLaminas />
     </aside>
   )
 }

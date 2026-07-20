@@ -52,7 +52,11 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
   )
 }
 
-export function BandejaImagens() {
+/**
+ * Miolo da bandeja: soltar arquivos, adicionar e a grade de miniaturas. Vive
+ * separado da coluna para o layout compacto poder usá-lo dentro da gaveta.
+ */
+export function ConteudoFotos({ colunas = 'grid-cols-2' }: { colunas?: string }) {
   const imagens = useColagemStore((s) => s.imagens)
   const laminas = useColagemStore((s) => s.laminas)
   const adicionarImagens = useColagemStore((s) => s.adicionarImagens)
@@ -80,6 +84,51 @@ export function BandejaImagens() {
   const usadas = new Set(laminas.flatMap((l) => l.slots.map((s) => s.imagemId)).filter(Boolean))
 
   return (
+    <div
+      {...getRootProps()}
+      className={`flex min-h-0 flex-1 flex-col ${isDragActive ? 'bg-violet-500/10' : ''}`}
+    >
+      <input {...getInputProps()} />
+
+      <div className="px-3 pt-3">
+        <button
+          type="button"
+          onClick={open}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-borda-forte bg-superficie/60 px-3 py-3 text-xs text-texto transition-colors hover:border-violet-500 hover:text-realce-forte"
+        >
+          {carregando ? (
+            <>
+              <Loader2 size={14} className="animate-spin" /> Lendo arquivos…
+            </>
+          ) : (
+            <>
+              <ImagePlus size={14} /> {isDragActive ? 'Pode soltar!' : 'Adicionar fotos'}
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        {imagens.length === 0 ? (
+          <p className="mt-6 px-2 text-center text-[11px] leading-relaxed text-suave">
+            Nenhuma foto ainda. Solte arquivos aqui ou use o botão acima. Aceita JPG, PNG e WEBP.
+          </p>
+        ) : (
+          <div className={`grid gap-2 ${colunas}`}>
+            {imagens.map((imagem) => (
+              <Miniatura key={imagem.id} imagem={imagem} usada={usadas.has(imagem.id)} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function BandejaImagens() {
+  const imagens = useColagemStore((s) => s.imagens)
+
+  return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-borda bg-painel">
       <header className={`${FAIXA} gap-2 px-4`}>
         <Images size={15} className="text-realce" />
@@ -89,44 +138,7 @@ export function BandejaImagens() {
         </span>
       </header>
 
-      <div
-        {...getRootProps()}
-        className={`flex min-h-0 flex-1 flex-col ${isDragActive ? 'bg-violet-500/10' : ''}`}
-      >
-        <input {...getInputProps()} />
-
-        <div className="px-3 pt-3">
-          <button
-            type="button"
-            onClick={open}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-borda-forte bg-superficie/60 px-3 py-3 text-xs text-texto transition-colors hover:border-violet-500 hover:text-realce-forte"
-          >
-            {carregando ? (
-              <>
-                <Loader2 size={14} className="animate-spin" /> Lendo arquivos…
-              </>
-            ) : (
-              <>
-                <ImagePlus size={14} /> {isDragActive ? 'Pode soltar!' : 'Adicionar fotos'}
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {imagens.length === 0 ? (
-            <p className="mt-6 px-2 text-center text-[11px] leading-relaxed text-suave">
-              Nenhuma foto ainda. Solte arquivos aqui ou use o botão acima. Aceita JPG, PNG e WEBP.
-            </p>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {imagens.map((imagem) => (
-                <Miniatura key={imagem.id} imagem={imagem} usada={usadas.has(imagem.id)} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <ConteudoFotos />
 
       <footer className="flex items-start gap-2 border-t border-borda px-4 py-3 text-[11px] leading-relaxed text-suave">
         <ShieldCheck size={13} className="mt-0.5 shrink-0 text-emerald-500" />

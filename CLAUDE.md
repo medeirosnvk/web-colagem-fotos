@@ -59,6 +59,8 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
 | `src/lib/layoutEfetivo.ts` | Aplica gap e margem do usuário sobre o layout do catálogo |
 | `src/lib/useMedidas.ts` | Mede um elemento (ResizeObserver) — a colagem não tem tamanho fixo |
+| `src/lib/useCompacto.ts` | Detecta tela estreita: abaixo de 1024 px o layout muda de estrutura |
+| `src/componentes/PainelInferior.tsx` | Gaveta com abas do layout compacto |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
 | `src/componentes/PainelLaminas.tsx` | Pilha de lâminas, com miniaturas reais e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
@@ -86,6 +88,27 @@ Consequências ao mexer aqui:
   precisa reposicionar o foco quando a lâmina ativa deixa de existir no
   documento restaurado, e é isso que `ajustarFoco` faz.
 - Sempre existe pelo menos uma lâmina: `removerLamina` não deixa esvaziar.
+
+### Layout amplo e compacto
+
+Abaixo de **1024 px** (`useCompacto`) as quatro colunas não cabem — sozinhas
+somam ~690 px e não sobra colagem para editar. Aí o app troca de estrutura: a
+colagem ocupa a tela e fotos, lâminas, formato, layout e ajustes viram abas
+numa gaveta recolhível embaixo (`PainelInferior`).
+
+Para isso, o **conteúdo** dos painéis vive separado da **moldura** de coluna:
+`ConteudoFotos` e `ConteudoLaminas` são usados tanto pelas colunas fixas quanto
+pela gaveta. Ao mexer nesses painéis, mexa no conteúdo — senão a mudança só
+aparece num dos dois layouts.
+
+No cabeçalho, tela estreita quebra em duas linhas em vez de esconder controles:
+com duas ou mais lâminas aparece um segundo seletor (escopo da exportação) e
+não há espaço para tudo numa linha só.
+
+Em toque, o caminho principal para preencher **não é arrastar**, é tocar na
+miniatura: `usarImagem` põe a foto no slot selecionado e **move a seleção para
+o próximo vazio**, para toques sucessivos preencherem slots sucessivos em vez
+de substituírem sempre o mesmo.
 
 ### Tema claro e escuro
 
