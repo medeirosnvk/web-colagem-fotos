@@ -46,15 +46,15 @@ export function AbaLayout() {
               onClick={() => setFiltro(q)}
               className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
                 filtro === q
-                  ? 'border-violet-500 bg-violet-500/15 text-violet-200'
-                  : 'border-neutral-800 bg-neutral-900 text-neutral-400 hover:border-neutral-600'
+                  ? 'border-violet-500 bg-violet-500/15 text-realce-forte'
+                  : 'border-borda bg-superficie text-suave hover:border-borda-forte'
               }`}
             >
               {q === null ? 'Todos' : `${q} ${q === 1 ? 'foto' : 'fotos'}`}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[11px] text-neutral-600">
+        <p className="mt-2 text-[11px] text-tenue">
           {total} {total === 1 ? 'opção' : 'opções'} para {formato.proporcao}. Trocar de layout
           mantém as fotos já posicionadas.
         </p>
@@ -62,8 +62,8 @@ export function AbaLayout() {
 
       {visiveis.map(({ estilo, layouts }) => (
         <section key={estilo}>
-          <h3 className="text-xs font-medium text-neutral-200">{ROTULO_ESTILO[estilo]}</h3>
-          <p className="mt-0.5 mb-2 text-[11px] leading-snug text-neutral-600">
+          <h3 className="text-xs font-medium text-texto">{ROTULO_ESTILO[estilo]}</h3>
+          <p className="mt-0.5 mb-2 text-[11px] leading-snug text-tenue">
             {DESCRICAO_ESTILO[estilo]}
           </p>
 
@@ -83,7 +83,7 @@ export function AbaLayout() {
                   className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-colors ${
                     layoutId === l.id
                       ? 'border-violet-500 bg-violet-500/10'
-                      : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600'
+                      : 'border-borda bg-superficie hover:border-borda-forte'
                   }`}
                 >
                   <span
@@ -97,7 +97,7 @@ export function AbaLayout() {
                       corFundo={corFundo}
                     />
                   </span>
-                  <span className="text-center text-[10px] leading-tight text-neutral-400">
+                  <span className="text-center text-[10px] leading-tight text-suave">
                     {l.nome}
                   </span>
                 </button>

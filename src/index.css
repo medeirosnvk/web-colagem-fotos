@@ -1,5 +1,68 @@
 @import 'tailwindcss';
 
+/*
+  Cores da interface como tokens semânticos. Cada um aponta para uma variável
+  que troca de valor conforme o tema, então mudar a classe de <html> repinta o
+  app inteiro sem nenhum `dark:` espalhado pelos componentes.
+
+  IMPORTANTE: isto vale só para a moldura do app. A colagem em si (TelaColagem,
+  SlotEditor, PreviewLayout) é desenhada na `corFundo` que o usuário escolheu
+  para exportar — branco ou preto — e NÃO pode acompanhar o tema. Um
+  placeholder em `text-suave` sobre uma colagem preta no tema claro ficaria
+  ilegível. Lá as cores continuam literais, de propósito.
+*/
+@theme {
+  --color-fundo: var(--c-fundo);
+  --color-painel: var(--c-painel);
+  --color-superficie: var(--c-superficie);
+  --color-elevado: var(--c-elevado);
+  --color-borda: var(--c-borda);
+  --color-borda-forte: var(--c-borda-forte);
+  --color-trilho: var(--c-trilho);
+  --color-texto: var(--c-texto);
+  --color-suave: var(--c-suave);
+  --color-tenue: var(--c-tenue);
+  --color-realce: var(--c-realce);
+  --color-realce-forte: var(--c-realce-forte);
+  --color-zona: var(--c-zona);
+}
+
+/* Escuro é o padrão. */
+:root {
+  --c-fundo: #0a0a0b;
+  --c-painel: #0e0e10;
+  --c-superficie: #17171a;
+  --c-elevado: #26262b;
+  --c-borda: #26262b;
+  --c-borda-forte: #52525b;
+  --c-trilho: #3f3f46;
+  --c-texto: #f4f4f5;
+  --c-suave: #a1a1aa;
+  --c-tenue: #71717a;
+  --c-realce: #a78bfa;
+  --c-realce-forte: #c4b5fd;
+  /* aviso de zona segura de Stories/Reels */
+  --c-zona: #a5f3fc;
+  color-scheme: dark;
+}
+
+:root.claro {
+  --c-fundo: #f4f4f5;
+  --c-painel: #ffffff;
+  --c-superficie: #ffffff;
+  --c-elevado: #e7e7ea;
+  --c-borda: #e4e4e7;
+  --c-borda-forte: #a1a1aa;
+  --c-trilho: #d4d4d8;
+  --c-texto: #18181b;
+  --c-suave: #52525b;
+  --c-tenue: #a1a1aa;
+  --c-realce: #7c3aed;
+  --c-realce-forte: #6d28d9;
+  --c-zona: #0e7490;
+  color-scheme: light;
+}
+
 html,
 body,
 #root {
@@ -7,19 +70,19 @@ body,
 }
 
 body {
-  @apply bg-neutral-950 text-neutral-100 antialiased;
+  @apply bg-fundo text-texto antialiased;
   font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 /* Slider consistente entre navegadores */
 input[type='range'] {
-  @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-neutral-700;
+  @apply bg-trilho h-1.5 w-full cursor-pointer appearance-none rounded-full;
 }
 input[type='range']::-webkit-slider-thumb {
-  @apply h-4 w-4 appearance-none rounded-full bg-violet-400 shadow;
+  @apply bg-realce h-4 w-4 appearance-none rounded-full shadow;
 }
 input[type='range']::-moz-range-thumb {
-  @apply h-4 w-4 rounded-full border-0 bg-violet-400;
+  @apply bg-realce h-4 w-4 rounded-full border-0;
 }
 
 ::-webkit-scrollbar {
@@ -27,7 +90,7 @@ input[type='range']::-moz-range-thumb {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-neutral-700;
+  @apply bg-trilho rounded-full;
 }
 ::-webkit-scrollbar-track {
   @apply bg-transparent;

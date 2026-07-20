@@ -18,9 +18,9 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
   return (
     <div
       ref={setNodeRef}
-      className={`group relative aspect-square overflow-hidden rounded-lg border bg-neutral-900 ${
+      className={`group relative aspect-square overflow-hidden rounded-lg border bg-superficie ${
         isDragging ? 'opacity-30' : ''
-      } ${usada ? 'border-violet-500/60' : 'border-neutral-800'}`}
+      } ${usada ? 'border-violet-500/60' : 'border-borda'}`}
     >
       <img
         {...attributes}
@@ -41,11 +41,11 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
         type="button"
         onClick={() => removerImagem(imagem.id)}
         title="Remover imagem"
-        className="absolute top-1 right-1 rounded-full bg-black/70 p-1 text-neutral-300 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
+        className="absolute top-1 right-1 rounded-full bg-black/70 p-1 text-texto opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-400"
       >
         <X size={13} />
       </button>
-      <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 to-transparent px-1.5 pt-4 pb-1 text-[10px] text-neutral-300">
+      <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/85 to-transparent px-1.5 pt-4 pb-1 text-[10px] text-texto">
         {imagem.largura}×{imagem.altura}
       </span>
     </div>
@@ -80,11 +80,11 @@ export function BandejaImagens() {
   const usadas = new Set(laminas.flatMap((l) => l.slots.map((s) => s.imagemId)).filter(Boolean))
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-neutral-800 bg-neutral-950">
+    <aside className="flex w-60 shrink-0 flex-col border-r border-borda bg-painel">
       <header className={`${FAIXA} gap-2 px-4`}>
-        <Images size={15} className="text-violet-400" />
-        <h2 className="text-sm font-semibold text-neutral-200">Suas fotos</h2>
-        <span className="rounded-full bg-neutral-800 px-2 py-0.5 text-[11px] text-neutral-400">
+        <Images size={15} className="text-realce" />
+        <h2 className="text-sm font-semibold text-texto">Suas fotos</h2>
+        <span className="rounded-full bg-elevado px-2 py-0.5 text-[11px] text-suave">
           {imagens.length}
         </span>
       </header>
@@ -99,7 +99,7 @@ export function BandejaImagens() {
           <button
             type="button"
             onClick={open}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-700 bg-neutral-900/50 px-3 py-3 text-xs text-neutral-300 transition-colors hover:border-violet-500 hover:text-violet-200"
+            className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-borda-forte bg-superficie/60 px-3 py-3 text-xs text-texto transition-colors hover:border-violet-500 hover:text-realce-forte"
           >
             {carregando ? (
               <>
@@ -115,7 +115,7 @@ export function BandejaImagens() {
 
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {imagens.length === 0 ? (
-            <p className="mt-6 px-2 text-center text-[11px] leading-relaxed text-neutral-500">
+            <p className="mt-6 px-2 text-center text-[11px] leading-relaxed text-suave">
               Nenhuma foto ainda. Solte arquivos aqui ou use o botão acima. Aceita JPG, PNG e WEBP.
             </p>
           ) : (
@@ -128,7 +128,7 @@ export function BandejaImagens() {
         </div>
       </div>
 
-      <footer className="flex items-start gap-2 border-t border-neutral-800 px-4 py-3 text-[11px] leading-relaxed text-neutral-500">
+      <footer className="flex items-start gap-2 border-t border-borda px-4 py-3 text-[11px] leading-relaxed text-suave">
         <ShieldCheck size={13} className="mt-0.5 shrink-0 text-emerald-500" />
         Tudo roda no seu computador. Nenhuma imagem é enviada para a internet.
       </footer>

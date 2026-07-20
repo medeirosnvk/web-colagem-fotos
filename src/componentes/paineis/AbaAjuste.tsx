@@ -26,11 +26,11 @@ export function AbaAjuste() {
         {slot?.imagemId ? (
           <div className="space-y-4">
             <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-xs text-neutral-400">
+              <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
                 <span className="flex items-center gap-1.5">
                   <Maximize2 size={12} /> Zoom
                 </span>
-                <span className="tabular-nums text-neutral-300">
+                <span className="tabular-nums text-texto">
                   {Math.round(slot.escala * 100)}%
                 </span>
               </span>
@@ -42,13 +42,13 @@ export function AbaAjuste() {
                 value={slot.escala}
                 onChange={(e) => ajustarSlot(slot.slotId, { escala: Number(e.target.value) })}
               />
-              <span className="mt-1 block text-[11px] leading-snug text-neutral-600">
+              <span className="mt-1 block text-[11px] leading-snug text-tenue">
                 100% preenche o slot exatamente. Role o mouse sobre a foto para o mesmo efeito.
               </span>
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-xs text-neutral-400">Posição horizontal</span>
+              <span className="mb-1.5 block text-xs text-suave">Posição horizontal</span>
               <input
                 type="range"
                 min={-1}
@@ -60,7 +60,7 @@ export function AbaAjuste() {
             </label>
 
             <label className="block">
-              <span className="mb-1.5 block text-xs text-neutral-400">Posição vertical</span>
+              <span className="mb-1.5 block text-xs text-suave">Posição vertical</span>
               <input
                 type="range"
                 min={-1}
@@ -80,7 +80,7 @@ export function AbaAjuste() {
             </Botao>
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 rounded-lg border border-neutral-800 bg-neutral-900 p-3 text-xs text-neutral-500">
+          <p className="flex items-center gap-1.5 rounded-lg border border-borda bg-superficie p-3 text-xs text-suave">
             <MousePointer2 size={12} className="shrink-0" /> Clique numa foto da colagem para
             ajustar zoom e posição.
           </p>
@@ -105,9 +105,9 @@ export function AbaAjuste() {
 
       <Secao titulo="Espaçamento">
         <label className="block">
-          <span className="mb-1.5 flex items-center justify-between text-xs text-neutral-400">
+          <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
             Entre as fotos
-            <span className="tabular-nums text-neutral-300">{gap} px</span>
+            <span className="tabular-nums text-texto">{gap} px</span>
           </span>
           <input
             type="range"
@@ -120,9 +120,9 @@ export function AbaAjuste() {
         </label>
 
         <label className="mt-4 block">
-          <span className="mb-1.5 flex items-center justify-between text-xs text-neutral-400">
+          <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
             Margem externa
-            <span className="tabular-nums text-neutral-300">{margem} px</span>
+            <span className="tabular-nums text-texto">{margem} px</span>
           </span>
           <input
             type="range"
@@ -134,7 +134,7 @@ export function AbaAjuste() {
           />
         </label>
 
-        <label className="mt-4 flex cursor-pointer items-start gap-2 text-xs text-neutral-400">
+        <label className="mt-4 flex cursor-pointer items-start gap-2 text-xs text-suave">
           <input
             type="checkbox"
             checked={permitirReduzir}
@@ -143,7 +143,7 @@ export function AbaAjuste() {
           />
           <span>
             Permitir reduzir além do preenchimento
-            <span className="mt-0.5 block text-[11px] leading-snug text-neutral-600">
+            <span className="mt-0.5 block text-[11px] leading-snug text-tenue">
               O vão que sobrar dentro do slot fica com a cor de fundo.
             </span>
           </span>

@@ -4,11 +4,11 @@ type Variante = 'primario' | 'secundario' | 'fantasma' | 'perigo'
 
 const ESTILOS: Record<Variante, string> = {
   primario:
-    'bg-violet-600 text-white hover:bg-violet-500 disabled:bg-neutral-800 disabled:text-neutral-500',
+    'bg-violet-600 text-white hover:bg-violet-500 disabled:bg-elevado disabled:text-suave',
   secundario:
-    'bg-neutral-800 text-neutral-100 hover:bg-neutral-700 disabled:text-neutral-500',
+    'bg-elevado text-texto hover:bg-elevado disabled:text-suave',
   fantasma:
-    'bg-transparent text-neutral-300 hover:bg-neutral-800 hover:text-neutral-100 disabled:text-neutral-600',
+    'bg-transparent text-texto hover:bg-elevado hover:text-texto disabled:text-tenue',
   perigo: 'bg-transparent text-red-400 hover:bg-red-500/10',
 }
 
@@ -46,7 +46,7 @@ export function Cartao({
       className={`rounded-xl border p-4 text-left transition-all ${
         ativo
           ? 'border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/40'
-          : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600'
+          : 'border-borda bg-superficie hover:border-borda-forte'
       } ${className}`}
     >
       {children}

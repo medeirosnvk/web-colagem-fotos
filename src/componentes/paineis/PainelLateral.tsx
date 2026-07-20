@@ -19,7 +19,7 @@ const ABAS: { id: Aba; rotulo: string; Icone: typeof Crop }[] = [
 export function Secao({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-neutral-500 uppercase">
+      <h3 className="mb-2 text-[11px] font-semibold tracking-wide text-suave uppercase">
         {titulo}
       </h3>
       {children}
@@ -31,8 +31,8 @@ export function PainelLateral() {
   const [aba, setAba] = useState<Aba>('formato')
 
   return (
-    <aside className="flex w-80 shrink-0 flex-col border-l border-neutral-800 bg-neutral-950">
-      <nav className={`grid ${ALTURA_FAIXA} shrink-0 grid-cols-3 border-b border-neutral-800`}>
+    <aside className="flex w-80 shrink-0 flex-col border-l border-borda bg-painel">
+      <nav className={`grid ${ALTURA_FAIXA} shrink-0 grid-cols-3 border-b border-borda`}>
         {ABAS.map(({ id, rotulo, Icone }) => (
           <button
             key={id}
@@ -41,8 +41,8 @@ export function PainelLateral() {
             aria-current={aba === id ? 'page' : undefined}
             className={`flex h-full items-center justify-center gap-1.5 border-b-2 px-1 text-[11px] transition-colors ${
               aba === id
-                ? 'border-violet-500 text-violet-300'
-                : 'border-transparent text-neutral-500 hover:bg-neutral-900 hover:text-neutral-300'
+                ? 'border-violet-500 text-realce-forte'
+                : 'border-transparent text-suave hover:bg-superficie hover:text-texto'
             }`}
           >
             <Icone size={16} />

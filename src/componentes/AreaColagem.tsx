@@ -30,29 +30,29 @@ export function AreaColagem() {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className={`${FAIXA} justify-between gap-4 px-6`}>
-        <p className="truncate text-xs text-neutral-400">
+        <p className="truncate text-xs text-suave">
           {totalLaminas > 1 && (
             <>
-              <span className="font-medium text-violet-300">
+              <span className="font-medium text-realce-forte">
                 Lâmina {indice + 1}/{totalLaminas}
               </span>
-              <span className="text-neutral-600"> · </span>
+              <span className="text-tenue"> · </span>
             </>
           )}
-          <span className="font-medium text-neutral-200">{layout.nome}</span>
-          <span className="text-neutral-600"> · </span>
+          <span className="font-medium text-texto">{layout.nome}</span>
+          <span className="text-tenue"> · </span>
           {formato.largura}×{formato.altura} px
-          <span className="text-neutral-600"> · </span>
+          <span className="text-tenue"> · </span>
           {preenchidos} de {slots.length} slots
         </p>
-        <p className="hidden shrink-0 items-center gap-1.5 text-xs text-neutral-500 xl:flex">
+        <p className="hidden shrink-0 items-center gap-1.5 text-xs text-suave xl:flex">
           <MousePointer2 size={12} /> arraste para trocar de lugar · clique e arraste para
           reposicionar
         </p>
       </div>
 
       {temZonaSegura && (
-        <p className="border-b border-neutral-800 bg-cyan-500/5 px-6 py-1.5 text-[11px] text-cyan-200/90">
+        <p className="border-b border-borda bg-cyan-500/10 px-6 py-1.5 text-[11px] text-zona">
           <Info size={11} className="mr-1 inline" />
           As faixas pontilhadas <strong>não são cortadas</strong> — é onde o
           {destino === 'reels' ? ' Reels' : ' Stories'} desenha perfil, legenda e botões por cima.
@@ -80,7 +80,7 @@ export function AreaColagem() {
 
         {!temImagens && (
           <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
-            <p className="rounded-full border border-neutral-700 bg-neutral-900/90 px-4 py-1.5 text-xs text-neutral-300 shadow-lg">
+            <p className="rounded-full border border-borda-forte bg-superficie/90 px-4 py-1.5 text-xs text-texto shadow-lg">
               Carregue fotos na barra da esquerda e arraste para os slots.
             </p>
           </div>

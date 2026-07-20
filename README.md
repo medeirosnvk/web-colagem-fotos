@@ -1,6 +1,8 @@
-# Colagem de Fotos
+# Lambe
 
 Aplicativo web **100% local** para montar colagens prontas para Instagram e Facebook.
+O nome vem do *lambe-lambe*, o cartaz colado de rua — é o que o app faz: colar fotos
+numa lâmina.
 Não existe backend: as imagens são lidas via Object URL, a colagem é desenhada num
 `HTMLCanvasElement` e o arquivo é salvo direto pelo navegador. Nenhum byte de imagem
 trafega pela rede.
@@ -27,6 +29,7 @@ npm run dev
 | `src/data/layouts.ts` | Catálogo de layouts em coordenadas relativas (0..1) + ordem por proporção |
 | `src/store/useColagemStore.ts` | Estado da colagem (zustand) + histórico de desfazer/refazer |
 | `src/store/useExportacaoStore.ts` | Estado da exportação (formato escolhido, progresso, resultado) |
+| `src/store/useTemaStore.ts` | Tema claro/escuro, com a preferência guardada localmente |
 | `src/lib/cover.ts` | Geometria compartilhada: retângulo do slot e retângulo da imagem (cover + escala + offset) |
 | `src/lib/exportarColagem.ts` | Render no canvas na resolução exata, downscale com pica, PNG/JPG |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
@@ -61,6 +64,16 @@ exportação:
 
 Os layouts de moldura/assimétricos/sobrepostos deixam áreas vazias **de propósito**, para
 você escrever por cima no app de publicação. O app não insere texto.
+
+## Tema
+
+Claro e escuro, no botão do cabeçalho. Sem preferência salva, o app segue o
+`prefers-color-scheme` do sistema; depois disso a escolha fica guardada no navegador.
+
+As cores da interface são tokens semânticos em `src/index.css` que trocam de valor via
+uma classe no `<html>`. **A colagem em si não muda com o tema** — ela é desenhada na cor
+de fundo escolhida para exportação (branco ou preto), então o que você vê continua sendo
+exatamente o que sai no arquivo.
 
 ## Formatos suportados
 

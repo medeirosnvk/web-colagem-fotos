@@ -9,7 +9,7 @@ const OPCOES: { tipo: TipoArquivo; rotulo: string; detalhe: string }[] = [
 ]
 
 const ESTILO_SELECT =
-  'appearance-none rounded-lg border border-neutral-700 bg-neutral-900 py-2 pr-8 pl-3 text-sm text-neutral-200 transition-colors hover:border-neutral-500 focus:border-violet-500 focus:outline-none disabled:text-neutral-600'
+  'appearance-none rounded-lg border border-borda-forte bg-superficie py-2 pr-8 pl-3 text-sm text-texto transition-colors hover:border-borda-forte focus:border-violet-500 focus:outline-none disabled:text-tenue'
 
 /**
  * Escopo da exportação. Só aparece quando há mais de uma lâmina — com uma só,
@@ -39,7 +39,7 @@ export function SeletorEscopo({ comDetalhe = false }: { comDetalhe?: boolean }) 
       </select>
       <ChevronDown
         size={14}
-        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-500"
+        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-suave"
       />
     </div>
   )
@@ -71,7 +71,7 @@ export function SeletorTipoArquivo({ comDetalhe = false }: { comDetalhe?: boolea
       </select>
       <ChevronDown
         size={14}
-        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-500"
+        className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-suave"
       />
     </div>
   )

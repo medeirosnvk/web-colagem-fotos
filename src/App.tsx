@@ -8,13 +8,15 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
-import { RotateCcw, Redo2, Scissors, Undo2 } from 'lucide-react'
+import { Moon, RotateCcw, Redo2, Sun, Undo2 } from 'lucide-react'
 import { BandejaImagens } from './componentes/BandejaImagens'
 import { BotaoExportar } from './componentes/BotaoExportar'
 import { PainelLaminas } from './componentes/PainelLaminas'
 import { AreaColagem } from './componentes/AreaColagem'
 import { PainelLateral } from './componentes/paineis/PainelLateral'
+import { Logo } from './componentes/ui/Logo'
 import { laminaAtiva, useColagemStore } from './store/useColagemStore'
+import { useTemaStore } from './store/useTemaStore'
 
 export default function App() {
   const atribuirImagem = useColagemStore((s) => s.atribuirImagem)
@@ -25,6 +27,8 @@ export default function App() {
   const limparTudo = useColagemStore((s) => s.limparTudo)
   const podeDesfazer = useColagemStore((s) => s.passado.length > 0)
   const podeRefazer = useColagemStore((s) => s.futuro.length > 0)
+  const tema = useTemaStore((s) => s.tema)
+  const alternarTema = useTemaStore((s) => s.alternar)
 
   const [arrastando, setArrastando] = useState<string | null>(null)
 
@@ -91,12 +95,12 @@ export default function App() {
       onDragCancel={() => setArrastando(null)}
     >
       <div className="flex h-full flex-col">
-        <header className="flex items-center justify-between gap-6 border-b border-neutral-800 px-5 py-2.5">
+        <header className="flex items-center justify-between gap-6 border-b border-borda px-5 py-2.5">
           <div className="flex items-center gap-2">
-            <Scissors size={18} className="text-violet-400" />
-            <span className="font-semibold">Colagem de Fotos</span>
-            <span className="hidden text-xs text-neutral-500 lg:inline">
-              · local, sem envio para a internet
+            <Logo size={22} />
+            <span className="text-[15px] font-semibold tracking-tight">Lambe</span>
+            <span className="hidden text-xs text-suave lg:inline">
+              · colagens locais, sem envio para a internet
             </span>
           </div>
 
@@ -115,11 +119,17 @@ export default function App() {
             >
               <Redo2 size={16} />
             </BotaoIcone>
-            <span className="mx-2 h-5 w-px bg-neutral-800" />
+            <span className="mx-2 h-5 w-px bg-elevado" />
+            <BotaoIcone
+              titulo={tema === 'claro' ? 'Mudar para o tema escuro' : 'Mudar para o tema claro'}
+              onClick={alternarTema}
+            >
+              {tema === 'claro' ? <Moon size={16} /> : <Sun size={16} />}
+            </BotaoIcone>
             <BotaoIcone titulo="Recomeçar do zero" onClick={recomecar}>
               <RotateCcw size={15} />
             </BotaoIcone>
-            <span className="mx-2 h-5 w-px bg-neutral-800" />
+            <span className="mx-2 h-5 w-px bg-elevado" />
             <BotaoExportar />
           </div>
         </header>
@@ -163,7 +173,7 @@ function BotaoIcone({
       aria-label={titulo}
       onClick={onClick}
       disabled={desabilitado}
-      className="rounded-lg p-2 text-neutral-300 transition-colors hover:bg-neutral-800 hover:text-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-700 disabled:hover:bg-transparent"
+      className="rounded-lg p-2 text-texto transition-colors hover:bg-elevado hover:text-texto disabled:cursor-not-allowed disabled:text-tenue disabled:hover:bg-transparent"
     >
       {children}
     </button>

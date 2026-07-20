@@ -4,7 +4,9 @@ Instruções para trabalhar neste repositório.
 
 ## O que é
 
-App web local que monta colagens de fotos prontas para Instagram e Facebook.
+**Lambe** — app web local que monta colagens de fotos prontas para Instagram e
+Facebook. O nome vem do lambe-lambe, o cartaz colado de rua: é o que o app faz,
+colar fotos numa lâmina.
 Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
 trafega pela rede**. React + Vite + TypeScript, Tailwind v4, Zustand, dnd-kit,
 react-dropzone, lucide-react e pica.
@@ -81,6 +83,25 @@ Consequências ao mexer aqui:
   precisa reposicionar o foco quando a lâmina ativa deixa de existir no
   documento restaurado, e é isso que `ajustarFoco` faz.
 - Sempre existe pelo menos uma lâmina: `removerLamina` não deixa esvaziar.
+
+### Tema claro e escuro
+
+As cores da interface são tokens semânticos (`fundo`, `painel`, `superficie`,
+`elevado`, `borda`, `texto`, `suave`, `tenue`, `realce`…) definidos em
+`index.css`. Cada um aponta para uma variável que troca de valor em `:root` e
+`:root.claro`, então o tema inteiro muda com uma classe no `<html>` — não há
+nenhum `dark:` espalhado pelos componentes. Sem preferência salva, o app segue
+o `prefers-color-scheme` do sistema.
+
+**A colagem não acompanha o tema.** `TelaColagem`, `SlotEditor` e
+`PreviewLayout` desenham sobre a `corFundo` que o usuário escolheu para
+exportar (branco ou preto) e por isso mantêm cores **literais**. Um placeholder
+em `text-suave` sobre uma colagem preta no tema claro sairia ilegível — e, pior,
+o que se vê deixaria de corresponder ao arquivo. Se for mexer em cor por lá,
+pergunte primeiro: isso é moldura do app ou conteúdo da colagem?
+
+Não use a variante `dark:` do Tailwind: no v4 ela segue `prefers-color-scheme`,
+não a nossa classe, e ficaria fora de sincronia com o botão de tema.
 
 ### Modelo de slots
 

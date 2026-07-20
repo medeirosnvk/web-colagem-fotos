@@ -72,7 +72,7 @@ export function BotaoExportar() {
         onClick={aoClicar}
         disabled={ocupado || !temFoto}
         title={titulo}
-        className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:bg-neutral-800 disabled:text-neutral-500"
+        className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:bg-elevado disabled:text-suave"
       >
         {ocupado ? (
           <Loader2 size={15} className="animate-spin" />

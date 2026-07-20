@@ -35,8 +35,8 @@ function Chip({
       onClick={onClick}
       className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
         ativo
-          ? 'border-violet-500 bg-violet-500/15 text-violet-200'
-          : 'border-neutral-800 bg-neutral-900 text-neutral-400 hover:border-neutral-600 hover:text-neutral-200'
+          ? 'border-violet-500 bg-violet-500/15 text-realce-forte'
+          : 'border-borda bg-superficie text-suave hover:border-borda-forte hover:text-texto'
       }`}
     >
       {children}
@@ -92,20 +92,20 @@ export function AbaFormato() {
               className={`flex flex-col items-center gap-2 rounded-lg border p-2.5 transition-colors ${
                 formatoId === f.id
                   ? 'border-violet-500 bg-violet-500/10'
-                  : 'border-neutral-800 bg-neutral-900 hover:border-neutral-600'
+                  : 'border-borda bg-superficie hover:border-borda-forte'
               }`}
             >
               <span className="flex h-12 items-center justify-center">
                 <span
-                  className="block rounded-sm border border-neutral-600 bg-neutral-800"
+                  className="block rounded-sm border border-borda-forte bg-elevado"
                   style={{ height: 44, width: Math.min(72, (44 * f.largura) / f.altura) }}
                 />
               </span>
-              <span className="flex items-center gap-1 text-xs font-medium text-neutral-200">
+              <span className="flex items-center gap-1 text-xs font-medium text-texto">
                 {f.proporcao}
                 {f.recomendado && <Star size={10} className="fill-amber-400 text-amber-400" />}
               </span>
-              <span className="text-[10px] text-neutral-500">
+              <span className="text-[10px] text-suave">
                 {f.largura}×{f.altura}
               </span>
             </button>
@@ -113,8 +113,8 @@ export function AbaFormato() {
         </div>
 
         {formato?.observacao && (
-          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-neutral-500">
-            <Info size={12} className="mt-0.5 shrink-0 text-violet-400" />
+          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-suave">
+            <Info size={12} className="mt-0.5 shrink-0 text-realce" />
             {formato.observacao}
           </p>
         )}
@@ -139,19 +139,19 @@ export function AbaFormato() {
               onClick={() => definirCorFundo(valor)}
               className={`flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors ${
                 corFundo === valor
-                  ? 'border-violet-500 bg-violet-500/10 text-neutral-100'
-                  : 'border-neutral-800 bg-neutral-900 text-neutral-400 hover:border-neutral-600'
+                  ? 'border-violet-500 bg-violet-500/10 text-texto'
+                  : 'border-borda bg-superficie text-suave hover:border-borda-forte'
               }`}
             >
               <span
-                className="h-5 w-5 shrink-0 rounded border border-neutral-600"
+                className="h-5 w-5 shrink-0 rounded border border-borda-forte"
                 style={{ backgroundColor: valor }}
               />
               {nome}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[11px] leading-relaxed text-neutral-600">
+        <p className="mt-2 text-[11px] leading-relaxed text-tenue">
           Preenche margens e vãos entre as fotos — no editor e no arquivo exportado.
         </p>
       </Secao>
