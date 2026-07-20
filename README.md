@@ -1,8 +1,6 @@
-# Lambe
+# Phrame
 
 Aplicativo web **100% local** para montar colagens prontas para Instagram e Facebook.
-O nome vem do *lambe-lambe*, o cartaz colado de rua — é o que o app faz: colar fotos
-numa lâmina.
 Não existe backend: as imagens são lidas via Object URL, a colagem é desenhada num
 `HTMLCanvasElement` e o arquivo é salvo direto pelo navegador. Nenhum byte de imagem
 trafega pela rede.

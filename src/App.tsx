@@ -98,7 +98,7 @@ export default function App() {
         <header className="flex items-center justify-between gap-6 border-b border-borda px-5 py-2.5">
           <div className="flex items-center gap-2">
             <Logo size={22} />
-            <span className="text-[15px] font-semibold tracking-tight">Lambe</span>
+            <span className="text-[15px] font-semibold tracking-tight">Phrame</span>
             <span className="hidden text-xs text-suave lg:inline">
               · colagens locais, sem envio para a internet
             </span>

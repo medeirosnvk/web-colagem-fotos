@@ -1,7 +1,7 @@
 /**
- * Marca do Lambe: duas folhas coladas torta uma sobre a outra, como um
- * lambe-lambe de rua. A de trás é só contorno, a da frente leva o recorte de
- * foto — sol e morro, o mínimo que ainda lê como fotografia a 18 px.
+ * Marca do Phrame: dois quadros sobrepostos, tortos como fotos recém-coladas.
+ * O de trás é só contorno, o da frente leva o recorte de foto — sol e morro, o
+ * mínimo que ainda lê como fotografia a 18 px.
  *
  * As cores saem dos tokens do tema, então a marca acompanha claro e escuro.
  */

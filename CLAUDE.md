@@ -4,9 +4,8 @@ Instruções para trabalhar neste repositório.
 
 ## O que é
 
-**Lambe** — app web local que monta colagens de fotos prontas para Instagram e
-Facebook. O nome vem do lambe-lambe, o cartaz colado de rua: é o que o app faz,
-colar fotos numa lâmina.
+**Phrame** — app web local que monta colagens de fotos prontas para Instagram e
+Facebook.
 Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
 trafega pela rede**. React + Vite + TypeScript, Tailwind v4, Zustand, dnd-kit,
 react-dropzone, lucide-react e pica.

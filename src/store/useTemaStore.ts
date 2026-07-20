@@ -2,7 +2,7 @@ import { create } from 'zustand'
 
 export type Tema = 'escuro' | 'claro'
 
-const CHAVE = 'lambe:tema'
+const CHAVE = 'phrame:tema'
 
 /**
  * Tema da interface. Vive fora do documento da colagem: não entra no
