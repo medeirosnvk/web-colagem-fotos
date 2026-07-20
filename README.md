@@ -82,9 +82,12 @@ você escrever por cima no app de publicação. O app não insere texto.
 3. **Aba Layout** — filtre por quantidade de fotos e escolha entre os 39 layouts. Trocar de
    layout **mantém as fotos já posicionadas**, na ordem, e vale só para a lâmina em edição.
 4. **Montagem** — arraste miniaturas da bandeja para os slots, ou clique numa miniatura para
-   pôr no slot selecionado. Dentro do slot: arraste a foto para reposicionar, role o mouse
-   (ou use o slider da aba Ajustes) para dar zoom. A alça no canto superior esquerdo troca
-   fotos entre slots. Em Stories/Reels aparecem as zonas seguras pontilhadas, que **não**
+   pôr no slot selecionado. Já dentro da colagem, o arrasto de uma foto faz duas coisas
+   diferentes conforme ela esteja selecionada ou não: **foto não selecionada, arrastar troca
+   ela de lugar** com o slot onde você soltar; **clique primeiro para selecionar e aí o
+   arrasto reposiciona** a imagem dentro do slot. Role o mouse (ou use o slider da aba
+   Ajustes) para dar zoom. A alça no canto superior esquerdo troca de lugar mesmo com a foto
+   selecionada. Em Stories/Reels aparecem as zonas seguras pontilhadas, que **não**
    são exportadas.
 
    > As faixas pontilhadas **não indicam corte**. Em 9:16 nada é cortado: elas marcam os

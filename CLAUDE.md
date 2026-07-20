@@ -164,6 +164,16 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
   9:16 — as faixas marcam onde o app desenha perfil, legenda e botões **por
   cima**. O aviso de recorte de verdade é outro: o grid do perfil do Instagram
   corta para 3:4, avisado na aba Formato.
+- **O arrasto de uma foto faz duas coisas, separadas pela seleção.** Foto não
+  selecionada: o arrasto a leva para outro slot (troca). Foto selecionada
+  (depois de um clique): o mesmo gesto reposiciona a imagem dentro do slot.
+  Um clique curto — ponteiro desce e sobe a menos de 4 px — é o que seleciona.
+  Em `SlotEditor` isso é o `disabled` do `useDraggable` (`podeMudarDeSlot`), e
+  o `onPointerDown` do dnd-kit tem que ser **composto** com o nosso: como o
+  spread de `listeners` vem antes no JSX, um `onPointerDown` declarado depois
+  substituiria o do sensor e o arrasto pararia de funcionar em silêncio.
+  A alça continua movendo a foto mesmo com o slot selecionado, e por isso é um
+  segundo `useDraggable` com id próprio.
 - **`offsetX = 1` revela o lado esquerdo da foto**, porque o offset move a
   imagem para a direita. É manipulação direta, não é bug.
 - **Ícones de marca saíram do lucide-react.** Instagram/Facebook usam `Camera` e

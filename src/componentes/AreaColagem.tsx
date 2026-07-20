@@ -45,7 +45,8 @@ export function AreaColagem() {
           {preenchidos} de {slots.length} slots
         </p>
         <p className="hidden shrink-0 items-center gap-1.5 text-xs text-neutral-500 xl:flex">
-          <MousePointer2 size={12} /> arraste para reposicionar · role para dar zoom
+          <MousePointer2 size={12} /> arraste para trocar de lugar · clique e arraste para
+          reposicionar
         </p>
       </div>
 

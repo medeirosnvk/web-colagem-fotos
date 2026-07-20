@@ -47,12 +47,22 @@ export function SlotEditor({
   const limparSlot = useColagemStore((s) => s.limparSlot)
 
   const arraste = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null)
+  /** Onde o ponteiro desceu — serve para separar clique de arrasto. */
+  const inicio = useRef<{ x: number; y: number } | null>(null)
 
   const { setNodeRef: refSolta, isOver } = useDroppable({
     id: `slot:${instancia}:${slotId}`,
     data: { tipo: 'slot', slotId },
     disabled: !interativo,
   })
+
+  /**
+   * A foto só vira "peça arrastável" enquanto **não** está selecionada: aí o
+   * arrasto a leva para outro slot. Depois de selecionada, o mesmo gesto passa
+   * a reposicionar a foto dentro do slot — são as duas coisas que se quer fazer
+   * com uma foto, separadas por um clique.
+   */
+  const podeMudarDeSlot = interativo && !!imagem && !selecionado
 
   const {
     attributes,
@@ -61,6 +71,14 @@ export function SlotEditor({
     isDragging,
   } = useDraggable({
     id: `slotdrag:${instancia}:${slotId}`,
+    data: { tipo: 'slot', slotId },
+    disabled: !podeMudarDeSlot,
+  })
+
+  // A alça continua movendo a foto mesmo com o slot selecionado — é a saída
+  // para quem já ajustou o enquadramento e só então quis trocar de lugar.
+  const alca = useDraggable({
+    id: `slotalca:${instancia}:${slotId}`,
     data: { tipo: 'slot', slotId },
     disabled: !interativo || !imagem,
   })
@@ -72,9 +90,25 @@ export function SlotEditor({
 
   function aoApontar(e: PointerEvent<HTMLDivElement>) {
     if (!interativo || !imagem) return
-    selecionarSlot(slotId)
+    inicio.current = { x: e.clientX, y: e.clientY }
+
+    // Slot não selecionado: quem manda no gesto é o dnd-kit (levar para outro
+    // slot). Não capturamos o ponteiro nem começamos a reposicionar.
+    if (!selecionado) return
+
     e.currentTarget.setPointerCapture(e.pointerId)
     arraste.current = { x: e.clientX, y: e.clientY, offsetX: estado.offsetX, offsetY: estado.offsetY }
+  }
+
+  /**
+   * O `onPointerDown` do dnd-kit e o nosso precisam conviver no mesmo elemento.
+   * Como o spread de `listeners` vem antes no JSX, declarar `onPointerDown`
+   * depois o substituiria e o sensor nunca dispararia — daí a composição
+   * explícita.
+   */
+  function aoDescer(e: PointerEvent<HTMLDivElement>) {
+    aoApontar(e)
+    if (podeMudarDeSlot) listeners?.onPointerDown?.(e)
   }
 
   function aoMover(e: PointerEvent<HTMLDivElement>) {
@@ -93,6 +127,13 @@ export function SlotEditor({
   }
 
   function aoSoltar(e: PointerEvent<HTMLDivElement>) {
+    // Ponteiro desceu e subiu praticamente no mesmo lugar: foi clique, não
+    // arrasto — e clique é o que seleciona a foto para poder reposicioná-la.
+    const p = inicio.current
+    if (p && imagem && Math.hypot(e.clientX - p.x, e.clientY - p.y) < 4) {
+      selecionarSlot(slotId)
+    }
+    inicio.current = null
     arraste.current = null
     e.currentTarget.releasePointerCapture?.(e.pointerId)
   }
@@ -110,7 +151,7 @@ export function SlotEditor({
   return (
     <div
       ref={refSolta}
-      className={`absolute overflow-hidden ${isDragging ? 'opacity-40' : ''}`}
+      className={`absolute overflow-hidden ${isDragging || alca.isDragging ? 'opacity-40' : ''}`}
       style={{
         left: destino.x * escala,
         top: destino.y * escala,
@@ -122,13 +163,19 @@ export function SlotEditor({
       }}
     >
       <div
+        ref={refPega}
+        {...(podeMudarDeSlot ? listeners : {})}
+        {...(podeMudarDeSlot ? attributes : {})}
         className="group relative h-full w-full"
-        onPointerDown={aoApontar}
+        onPointerDown={aoDescer}
         onPointerMove={aoMover}
         onPointerUp={aoSoltar}
         onPointerCancel={aoSoltar}
         onWheel={aoRolar}
-        style={{ cursor: interativo && imagem ? 'grab' : 'default', touchAction: 'none' }}
+        style={{
+          cursor: interativo && imagem ? (selecionado ? 'move' : 'grab') : 'default',
+          touchAction: 'none',
+        }}
       >
         {imagem && desenho && (
           <img
@@ -172,11 +219,10 @@ export function SlotEditor({
               }`}
             />
             <button
-              ref={refPega}
-              {...attributes}
-              {...listeners}
+              ref={alca.setNodeRef}
+              {...alca.attributes}
+              {...alca.listeners}
               title="Arrastar para outro slot"
-              onPointerDown={(e) => e.stopPropagation()}
               className="absolute top-1 left-1 cursor-grab rounded bg-black/60 p-1 text-neutral-200 opacity-0 transition-opacity group-hover:opacity-100"
             >
               <GripVertical size={13} />
