@@ -1,5 +1,6 @@
 import type { CorFundo, Layout } from '../tipos'
 import { retanguloDoSlot } from '../lib/cover'
+import { sobrepoe } from '../lib/areaVisivel'
 
 /** Preview esquemático: os mesmos slots do editor, desenhados como retângulos. */
 export function PreviewLayout({
@@ -16,24 +17,27 @@ export function PreviewLayout({
   const claro = corFundo === '#FFFFFF'
   const escala = largura / 1080
   const contorno = (layout.contorno ?? 0) * escala
+  const retangulos = layout.slots.map((s) => retanguloDoSlot(s, layout, largura, altura))
 
   return (
     <div
       className="relative overflow-hidden rounded"
       style={{ width: largura, height: altura, backgroundColor: corFundo }}
     >
-      {layout.slots.map((s) => {
-        const r = retanguloDoSlot(s, layout, largura, altura)
+      {retangulos.map((r, i) => {
+        // Sem contorno, uma foto por cima de outra some no preview (mesmo
+        // cinza). Um fio na cor de fundo separa as duas.
+        const fio = contorno || (retangulos.slice(0, i).some((a) => sobrepoe(a, r)) ? 1 : 0)
         return (
           <div
-            key={s.id}
+            key={layout.slots[i].id}
             className={claro ? 'absolute bg-neutral-300' : 'absolute bg-neutral-700'}
             style={{
               left: r.x,
               top: r.y,
               width: r.w,
               height: r.h,
-              outline: contorno ? `${Math.max(1, contorno)}px solid ${corFundo}` : undefined,
+              outline: fio ? `${Math.max(1, fio)}px solid ${corFundo}` : undefined,
             }}
           />
         )

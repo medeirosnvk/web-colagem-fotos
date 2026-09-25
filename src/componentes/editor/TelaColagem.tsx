@@ -5,6 +5,7 @@ import { layoutPorId } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
 import { retanguloDoSlot } from '../../lib/cover'
 import { SlotEditor } from './SlotEditor'
+import { centroVisivel } from '../../lib/areaVisivel'
 import type { Lamina } from '../../tipos'
 
 /**
@@ -50,6 +51,10 @@ export function TelaColagem({
   const temZonaSegura =
     mostrarZonaSegura && (destinoWizard === 'stories' || destinoWizard === 'reels')
 
+  const retangulos = layout.slots.map((s) =>
+    retanguloDoSlot(s, layout, formato.largura, formato.altura),
+  )
+
   return (
     <div
       className="relative shadow-2xl shadow-black/60"
@@ -60,6 +65,7 @@ export function TelaColagem({
       }}
     >
       {layout.slots.map((s, i) => {
+        const destino = retangulos[i]
         const estado = slots.find((x) => x.slotId === s.id) ?? {
           slotId: s.id,
           escala: 1,
@@ -72,7 +78,8 @@ export function TelaColagem({
             slotId={s.id}
             instancia={instancia}
             numero={i + 1}
-            destino={retanguloDoSlot(s, layout, formato.largura, formato.altura)}
+            destino={destino}
+            rotulo={centroVisivel(destino, retangulos.slice(i + 1))}
             estado={estado}
             imagem={imagens.find((img) => img.id === estado.imagemId)}
             escala={escala}

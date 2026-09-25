@@ -23,6 +23,8 @@ interface Props {
   escala: number
   interativo: boolean
   numero: number
+  /** Centro do placeholder em fração do slot — fora do que outros slots cobrem. */
+  rotulo: { x: number; y: number }
   /** Contorno na cor de fundo, em px do canvas final. */
   contorno: number
   corFundo: string
@@ -37,6 +39,7 @@ export function SlotEditor({
   escala,
   interativo,
   numero,
+  rotulo,
   contorno,
   corFundo,
 }: Props) {
@@ -198,16 +201,21 @@ export function SlotEditor({
 
         {vazio && interativo && (
           <div
-            className={`flex h-full w-full flex-col items-center justify-center gap-1 border-2 border-dashed text-center transition-colors ${
+            className={`relative h-full w-full border-2 border-dashed text-center transition-colors ${
               isOver
                 ? 'border-violet-400 bg-violet-500/25 text-violet-100'
                 : 'border-neutral-500/60 bg-neutral-500/10 text-neutral-400'
             }`}
           >
-            <ImageOff size={16} />
-            <span className="px-1 text-[11px] leading-tight">
-              {isOver ? 'Solte aqui' : `Slot ${numero}`}
-            </span>
+            <div
+              className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1"
+              style={{ left: `${rotulo.x * 100}%`, top: `${rotulo.y * 100}%` }}
+            >
+              <ImageOff size={16} />
+              <span className="px-1 text-[11px] leading-tight whitespace-nowrap">
+                {isOver ? 'Solte aqui' : `Slot ${numero}`}
+              </span>
+            </div>
           </div>
         )}
 
