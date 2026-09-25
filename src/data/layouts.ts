@@ -34,14 +34,20 @@ function montar(
   }
 }
 
-function grade(id: string, nome: string, colunas: number, linhas: number): Layout {
+function grade(
+  id: string,
+  nome: string,
+  colunas: number,
+  linhas: number,
+  opcoes: Opcoes = {},
+): Layout {
   const slots: SlotLayout[] = []
   for (let l = 0; l < linhas; l++) {
     for (let c = 0; c < colunas; c++) {
       slots.push(slot(`s${l * colunas + c + 1}`, c / colunas, l / linhas, 1 / colunas, 1 / linhas))
     }
   }
-  return montar(id, nome, 'grade', TODAS, slots)
+  return montar(id, nome, 'grade', TODAS, slots, opcoes)
 }
 
 /**
@@ -104,6 +110,13 @@ export const CATALOGO: Record<string, Layout> = {
   ),
 
   'quatro-grade': grade('quatro-grade', '4 fotos — grade 2x2', 2, 2),
+  'quatro-grade-colada': grade('quatro-grade-colada', '4 fotos — grade 2x2 colada', 2, 2, {
+    gap: 0,
+  }),
+  'quatro-grade-moldura': grade('quatro-grade-moldura', '4 fotos — grade 2x2 com moldura', 2, 2, {
+    gap: 14,
+    margem: 14,
+  }),
   'quatro-grande-topo': montar('quatro-grande-topo', '4 fotos — grande no topo', 'grade', TODAS, [
     slot('s1', 0, 0, 1, 0.55),
     slot('s2', 0, 0.55, 1 / 3, 0.45),
@@ -125,6 +138,7 @@ export const CATALOGO: Record<string, Layout> = {
 
   'seis-2x3': grade('seis-2x3', '6 fotos — grade 2x3', 2, 3),
   'seis-3x2': grade('seis-3x2', '6 fotos — grade 3x2', 3, 2),
+  'nove-3x3': grade('nove-3x3', '9 fotos — grade 3x3', 3, 3, { gap: 4 }),
 
   // ------------------------------------------------------------------
   // Moldura — foto flutuando com bastante respiro na cor de fundo
@@ -138,6 +152,13 @@ export const CATALOGO: Record<string, Layout> = {
   'moldura-faixa': montar('moldura-faixa', 'Faixa central — muito ar', 'moldura', ALTAS, [
     slot('s1', 0.06, 0.24, 0.88, 0.5),
   ]),
+  'moldura-faixa-sangrada': montar(
+    'moldura-faixa-sangrada',
+    'Faixa central sangrada',
+    'moldura',
+    ALTAS,
+    [slot('s1', 0, 0.25, 1, 0.5)],
+  ),
   'moldura-titulo': montar('moldura-titulo', 'Espaço para título no topo', 'moldura', ALTAS, [
     slot('s1', 0.08, 0.28, 0.84, 0.64),
   ]),
@@ -189,6 +210,20 @@ export const CATALOGO: Record<string, Layout> = {
     'livre',
     TODAS,
     [slot('s1', 0.23, 0.03, 0.72, 0.46), slot('s2', 0.05, 0.53, 0.9, 0.44)],
+  ),
+  'livre-duas-paisagem-centro': montar(
+    'livre-duas-paisagem-centro',
+    '2 fotos — paisagens centralizadas',
+    'livre',
+    ALTAS,
+    [slot('s1', 0.14, 0.1, 0.72, 0.36), slot('s2', 0.14, 0.54, 0.72, 0.36)],
+  ),
+  'livre-duas-retratos-faixa': montar(
+    'livre-duas-retratos-faixa',
+    '2 fotos — retratos lado a lado',
+    'livre',
+    ALTAS,
+    [slot('s1', 0.025, 0.2, 0.47, 0.53), slot('s2', 0.505, 0.2, 0.47, 0.53)],
   ),
 
   'livre-tres-revista': montar('livre-tres-revista', '3 fotos — revista', 'livre', ALTAS, [
@@ -286,6 +321,13 @@ export const CATALOGO: Record<string, Layout> = {
     [slot('s1', 0.06, 0.1, 0.56, 0.46), slot('s2', 0.38, 0.44, 0.56, 0.46)],
     { contorno: 14 },
   ),
+  'sobreposta-fundo-destaque': montar(
+    'sobreposta-fundo-destaque',
+    '2 fotos — fundo + destaque',
+    'sobreposto',
+    ALTAS,
+    [slot('s1', 0, 0, 1, 1), slot('s2', 0.125, 0.48, 0.75, 0.4)],
+  ),
   'sobreposta-cantos': montar(
     'sobreposta-cantos',
     '2 fotos — cantos opostos',
@@ -349,10 +391,13 @@ const GRADES_VERTICAL = [
   'tres-grande-direita',
   'tres-faixas-verticais',
   'quatro-grade',
+  'quatro-grade-colada',
+  'quatro-grade-moldura',
   'quatro-grande-topo',
   'quatro-grande-esquerda',
   'seis-2x3',
   'seis-3x2',
+  'nove-3x3',
 ]
 
 /** Ordem das grades em paisagem (divisões verticais primeiro). */
@@ -367,9 +412,12 @@ const GRADES_PAISAGEM = [
   'tres-faixas-horizontais',
   'quatro-grande-esquerda',
   'quatro-grade',
+  'quatro-grade-colada',
+  'quatro-grade-moldura',
   'quatro-grande-topo',
   'seis-3x2',
   'seis-2x3',
+  'nove-3x3',
 ]
 
 const GRADES_QUADRADO = [
@@ -382,10 +430,13 @@ const GRADES_QUADRADO = [
   'tres-faixas-verticais',
   'tres-faixas-horizontais',
   'quatro-grade',
+  'quatro-grade-colada',
+  'quatro-grade-moldura',
   'quatro-grande-topo',
   'quatro-grande-esquerda',
   'seis-3x2',
   'seis-2x3',
+  'nove-3x3',
 ]
 
 export function orientacaoDe(proporcao: ProporcaoId): Orientacao {

@@ -24,6 +24,9 @@ componentes também são em português. Mantenha esse padrão.
   como parte da mesma tarefa, sem perguntar. Não abrir branch nem PR.
 - Antes de commitar: `npx tsc -b` e, para mudanças com efeito visual, exercitar
   o app de verdade no navegador (veja "Como verificar").
+- **Toda feature nova sobe a versão** em `package.json` (minor para feature,
+  patch para correção). O cabeçalho do app mostra `v{__VERSAO__}`, injetado
+  pelo Vite a partir dela.
 - Não commitar artefatos de teste. `.testes-locais/` e `.playwright-mcp/` já
   estão no `.gitignore`.
 

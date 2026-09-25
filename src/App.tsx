@@ -106,6 +106,7 @@ export default function App() {
           <div className="flex min-w-0 items-center gap-2">
             <Logo size={22} className="shrink-0" />
             <span className="truncate text-[15px] font-semibold tracking-tight">Phrame</span>
+            <span className="shrink-0 text-[11px] tabular-nums text-tenue">v{__VERSAO__}</span>
             <span className="hidden text-xs text-suave lg:inline">
               · colagens locais, sem envio para a internet
             </span>
