@@ -218,12 +218,26 @@ export const CATALOGO: Record<string, Layout> = {
     ALTAS,
     [slot('s1', 0.14, 0.1, 0.72, 0.36), slot('s2', 0.14, 0.54, 0.72, 0.36)],
   ),
+  'livre-duas-paisagens-afastadas': montar(
+    'livre-duas-paisagens-afastadas',
+    '2 fotos — paisagens afastadas',
+    'livre',
+    ALTAS,
+    [slot('s1', 0.14, 0.06, 0.72, 0.36), slot('s2', 0.14, 0.58, 0.72, 0.36)],
+  ),
   'livre-duas-retratos-faixa': montar(
     'livre-duas-retratos-faixa',
     '2 fotos — retratos lado a lado',
     'livre',
     ALTAS,
     [slot('s1', 0.025, 0.2, 0.47, 0.53), slot('s2', 0.505, 0.2, 0.47, 0.53)],
+  ),
+  'livre-duas-retratos-afastados': montar(
+    'livre-duas-retratos-afastados',
+    '2 fotos — retratos afastados',
+    'livre',
+    ALTAS,
+    [slot('s1', 0.06, 0.27, 0.41, 0.46), slot('s2', 0.53, 0.27, 0.41, 0.46)],
   ),
 
   'livre-tres-revista': montar('livre-tres-revista', '3 fotos — revista', 'livre', ALTAS, [
