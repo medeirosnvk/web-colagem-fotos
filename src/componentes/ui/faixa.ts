@@ -6,4 +6,4 @@
 export const ALTURA_FAIXA = 'h-11'
 
 /** Faixa de cabeçalho padrão: altura fixa, conteúdo centralizado na vertical. */
-export const FAIXA = `flex ${ALTURA_FAIXA} shrink-0 items-center border-b border-borda`
+export const FAIXA = `flex ${ALTURA_FAIXA} shrink-0 items-center border-b`

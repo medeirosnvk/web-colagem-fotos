@@ -3,6 +3,8 @@ import { AlertCircle, Check, Download, Loader2 } from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
 import { useExportacaoStore } from '../store/useExportacaoStore'
 import { SeletorEscopo, SeletorTipoArquivo } from './SeletorTipoArquivo'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 function formatarBytes(bytes: number) {
   return bytes > 1_048_576
@@ -56,36 +58,36 @@ export function BotaoExportar() {
   return (
     <div className="flex items-center gap-2">
       {erro && (
-        <span
-          title={erro}
-          className="flex items-center gap-1.5 text-xs text-red-400"
-        >
-          <AlertCircle size={13} /> falha ao exportar
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="flex items-center gap-1.5 text-xs text-destructive">
+              <AlertCircle className="size-3.5" /> falha ao exportar
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{erro}</TooltipContent>
+        </Tooltip>
       )}
 
       <SeletorEscopo />
       <SeletorTipoArquivo />
 
-      <button
-        type="button"
-        onClick={aoClicar}
-        disabled={ocupado || !temFoto}
-        title={titulo}
-        className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-violet-600 px-2.5 py-2 text-sm font-medium text-white transition-colors hover:bg-violet-500 disabled:bg-elevado disabled:text-suave sm:px-3.5"
-      >
-        {ocupado ? (
-          <Loader2 size={15} className="animate-spin" />
-        ) : concluido ? (
-          <Check size={15} />
-        ) : (
-          <Download size={15} />
-        )}
-        {/* em tela estreita o cabeçalho não comporta o rótulo: fica só o ícone */}
-        <span className="hidden sm:inline">
-          {ocupado ? 'Exportando…' : concluido ? 'Baixado!' : 'Exportar'}
-        </span>
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          {/* span: botão desabilitado não dispara eventos, e a dica explica por quê */}
+          <span className="inline-flex">
+            <Button size="sm" onClick={aoClicar} disabled={ocupado || !temFoto}>
+              {ocupado ? <Loader2 className="animate-spin" /> : concluido ? <Check /> : <Download />}
+              {/* em tela estreita o cabeçalho não comporta o rótulo: fica só o ícone */}
+              <span className="hidden sm:inline">
+                {ocupado ? 'Exportando…' : concluido ? 'Baixado!' : 'Exportar'}
+              </span>
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="end" className="max-w-72 whitespace-pre-line">
+          {titulo}
+        </TooltipContent>
+      </Tooltip>
     </div>
   )
 }

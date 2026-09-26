@@ -441,6 +441,7 @@ const GRADES_QUADRADO = [
   'tres-grande-esquerda',
   'tres-grande-direita',
   'tres-grande-topo',
+  'tres-grande-base',
   'tres-faixas-verticais',
   'tres-faixas-horizontais',
   'quatro-grade',

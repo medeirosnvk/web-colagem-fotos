@@ -1,6 +1,10 @@
 import { Eraser, Maximize2, MousePointer2, RotateCcw, Wand2 } from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
-import { Botao } from '../ui/Botao'
+import type { ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Slider } from '@/components/ui/slider'
 import { Secao } from './PainelLateral'
 
 export function AbaAjuste() {
@@ -24,131 +28,137 @@ export function AbaAjuste() {
     <div className="space-y-6">
       <Secao titulo={slot?.imagemId ? `Foto do slot ${indice}` : 'Foto selecionada'}>
         {slot?.imagemId ? (
-          <div className="space-y-4">
-            <label className="block">
-              <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
-                <span className="flex items-center gap-1.5">
-                  <Maximize2 size={12} /> Zoom
-                </span>
-                <span className="tabular-nums text-texto">
-                  {Math.round(slot.escala * 100)}%
-                </span>
-              </span>
-              <input
-                type="range"
+          <div className="space-y-5">
+            <Controle
+              rotulo={
+                <>
+                  <Maximize2 className="size-3" /> Zoom
+                </>
+              }
+              valor={`${Math.round(slot.escala * 100)}%`}
+              ajuda="100% preenche o slot exatamente. Role o mouse sobre a foto para o mesmo efeito."
+            >
+              <Slider
                 min={minimo}
                 max={5}
                 step={0.01}
-                value={slot.escala}
-                onChange={(e) => ajustarSlot(slot.slotId, { escala: Number(e.target.value) })}
+                value={[slot.escala]}
+                onValueChange={([v]) => ajustarSlot(slot.slotId, { escala: v })}
               />
-              <span className="mt-1 block text-[11px] leading-snug text-tenue">
-                100% preenche o slot exatamente. Role o mouse sobre a foto para o mesmo efeito.
-              </span>
-            </label>
+            </Controle>
 
-            <label className="block">
-              <span className="mb-1.5 block text-xs text-suave">Posição horizontal</span>
-              <input
-                type="range"
+            <Controle rotulo="Posição horizontal">
+              <Slider
                 min={-1}
                 max={1}
                 step={0.01}
-                value={slot.offsetX}
-                onChange={(e) => ajustarSlot(slot.slotId, { offsetX: Number(e.target.value) })}
+                value={[slot.offsetX]}
+                onValueChange={([v]) => ajustarSlot(slot.slotId, { offsetX: v })}
               />
-            </label>
+            </Controle>
 
-            <label className="block">
-              <span className="mb-1.5 block text-xs text-suave">Posição vertical</span>
-              <input
-                type="range"
+            <Controle rotulo="Posição vertical">
+              <Slider
                 min={-1}
                 max={1}
                 step={0.01}
-                value={slot.offsetY}
-                onChange={(e) => ajustarSlot(slot.slotId, { offsetY: Number(e.target.value) })}
+                value={[slot.offsetY]}
+                onValueChange={([v]) => ajustarSlot(slot.slotId, { offsetY: v })}
               />
-            </label>
+            </Controle>
 
-            <Botao
-              variante="fantasma"
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => redefinirSlot(slot.slotId)}
               className="w-full"
             >
-              <RotateCcw size={14} /> Recentralizar
-            </Botao>
+              <RotateCcw /> Recentralizar
+            </Button>
           </div>
         ) : (
-          <p className="flex items-center gap-1.5 rounded-lg border border-borda bg-superficie p-3 text-xs text-suave">
-            <MousePointer2 size={12} className="shrink-0" /> Clique numa foto da colagem para
+          <p className="flex items-center gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
+            <MousePointer2 className="size-3.5 shrink-0" /> Clique numa foto da colagem para
             ajustar zoom e posição.
           </p>
         )}
       </Secao>
 
       <Secao titulo="Preenchimento">
-        <div className="space-y-2">
-          <Botao
-            variante="secundario"
-            onClick={preencher}
-            disabled={!temImagens}
-            className="w-full"
-          >
-            <Wand2 size={14} /> Preencher slots vazios
-          </Botao>
-          <Botao variante="fantasma" onClick={() => esvaziar()} className="w-full">
-            <Eraser size={14} /> Esvaziar todos os slots
-          </Botao>
+        <div className="grid gap-2">
+          <Button variant="secondary" size="sm" onClick={preencher} disabled={!temImagens}>
+            <Wand2 /> Preencher slots vazios
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => esvaziar()}>
+            <Eraser /> Esvaziar todos os slots
+          </Button>
         </div>
       </Secao>
 
       <Secao titulo="Espaçamento">
-        <label className="block">
-          <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
-            Entre as fotos
-            <span className="tabular-nums text-texto">{gap} px</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={80}
-            step={2}
-            value={gap}
-            onChange={(e) => definirEspacamento(Number(e.target.value), margem)}
-          />
-        </label>
+        <div className="space-y-5">
+          <Controle rotulo="Entre as fotos" valor={`${gap} px`}>
+            <Slider
+              min={0}
+              max={80}
+              step={2}
+              value={[gap]}
+              onValueChange={([v]) => definirEspacamento(v, margem)}
+            />
+          </Controle>
 
-        <label className="mt-4 block">
-          <span className="mb-1.5 flex items-center justify-between text-xs text-suave">
-            Margem externa
-            <span className="tabular-nums text-texto">{margem} px</span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={120}
-            step={2}
-            value={margem}
-            onChange={(e) => definirEspacamento(gap, Number(e.target.value))}
-          />
-        </label>
+          <Controle rotulo="Margem externa" valor={`${margem} px`}>
+            <Slider
+              min={0}
+              max={120}
+              step={2}
+              value={[margem]}
+              onValueChange={([v]) => definirEspacamento(gap, v)}
+            />
+          </Controle>
 
-        <label className="mt-4 flex cursor-pointer items-start gap-2 text-xs text-suave">
-          <input
-            type="checkbox"
-            checked={permitirReduzir}
-            onChange={alternarPermitirReduzir}
-            className="mt-0.5 accent-violet-500"
-          />
-          <span>
-            Permitir reduzir além do preenchimento
-            <span className="mt-0.5 block text-[11px] leading-snug text-tenue">
-              O vão que sobrar dentro do slot fica com a cor de fundo.
-            </span>
-          </span>
-        </label>
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="permitir-reduzir"
+              checked={permitirReduzir}
+              onCheckedChange={alternarPermitirReduzir}
+              className="mt-0.5"
+            />
+            <div className="grid gap-1">
+              <Label htmlFor="permitir-reduzir" className="text-xs font-normal">
+                Permitir reduzir além do preenchimento
+              </Label>
+              <p className="text-xs leading-snug text-muted-foreground">
+                O vão que sobrar dentro do slot fica com a cor de fundo.
+              </p>
+            </div>
+          </div>
+        </div>
       </Secao>
+    </div>
+  )
+}
+
+/** Rótulo + valor atual em cima, slider embaixo, ajuda opcional no pé. */
+function Controle({
+  rotulo,
+  valor,
+  ajuda,
+  children,
+}: {
+  rotulo: ReactNode
+  valor?: string
+  ajuda?: string
+  children: ReactNode
+}) {
+  return (
+    <div className="grid gap-2.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="flex items-center gap-1.5 text-foreground">{rotulo}</span>
+        {valor && <span className="text-muted-foreground tabular-nums">{valor}</span>}
+      </div>
+      {children}
+      {ajuda && <p className="text-xs leading-snug text-muted-foreground">{ajuda}</p>}
     </div>
   )
 }

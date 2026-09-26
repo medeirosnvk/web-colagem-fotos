@@ -6,6 +6,7 @@ import { AbaFormato } from './paineis/AbaFormato'
 import { AbaLayout } from './paineis/AbaLayout'
 import { AbaAjuste } from './paineis/AbaAjuste'
 import { useColagemStore } from '../store/useColagemStore'
+import { cn } from '@/lib/utils'
 
 type Aba = 'fotos' | 'laminas' | 'formato' | 'layout' | 'ajuste'
 
@@ -40,7 +41,7 @@ export function PainelInferior() {
   }
 
   return (
-    <div className="flex shrink-0 flex-col border-t border-borda bg-painel">
+    <div className="flex shrink-0 flex-col border-t bg-sidebar">
       <nav className="flex">
         {ABAS.map(({ id, rotulo, Icone }) => {
           const ativa = aba === id && aberta
@@ -50,16 +51,15 @@ export function PainelInferior() {
               type="button"
               onClick={() => aoTocar(id)}
               aria-current={ativa ? 'page' : undefined}
-              className={`flex flex-1 flex-col items-center gap-0.5 border-t-2 px-1 py-2 text-[10px] transition-colors ${
-                ativa
-                  ? 'border-violet-500 text-realce-forte'
-                  : 'border-transparent text-suave hover:text-texto'
-              }`}
+              className={cn(
+                'flex flex-1 cursor-pointer flex-col items-center gap-0.5 border-t-2 border-transparent px-1 py-2 text-[10px] text-muted-foreground transition-colors hover:text-foreground',
+                ativa && 'border-primary font-medium text-foreground',
+              )}
             >
               <span className="relative">
                 <Icone size={17} />
                 {contador[id] ? (
-                  <span className="absolute -top-1.5 -right-2 rounded-full bg-elevado px-1 text-[9px] text-suave">
+                  <span className="absolute -top-1.5 -right-2 rounded-full bg-primary px-1 text-[9px] text-primary-foreground tabular-nums">
                     {contador[id]}
                   </span>
                 ) : null}
@@ -75,7 +75,7 @@ export function PainelInferior() {
           title={aberta ? 'Recolher painel' : 'Abrir painel'}
           aria-label={aberta ? 'Recolher painel' : 'Abrir painel'}
           aria-expanded={aberta}
-          className="flex w-10 shrink-0 items-center justify-center border-t-2 border-transparent text-suave"
+          className="flex w-10 shrink-0 cursor-pointer items-center justify-center border-t-2 border-transparent text-muted-foreground hover:text-foreground"
         >
           <ChevronDown
             size={16}

@@ -7,8 +7,8 @@ Instruções para trabalhar neste repositório.
 **Phrame** — app web local que monta colagens de fotos prontas para Instagram e
 Facebook.
 Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
-trafega pela rede**. React + Vite + TypeScript, Tailwind v4, Zustand, dnd-kit,
-react-dropzone, lucide-react e pica.
+trafega pela rede**. React + Vite + TypeScript, Tailwind v4, shadcn/ui (Radix), Zustand,
+dnd-kit, react-dropzone, lucide-react e pica.
 
 A interface é **uma tela só** — bandeja de fotos e pilha de lâminas à esquerda,
 colagem no centro, painel com abas (Formato · Layout · Ajustes) à direita e a
@@ -68,7 +68,8 @@ componentes também são em português. Mantenha esse padrão.
 | `src/componentes/PainelLaminas.tsx` | Pilha de lâminas, com miniaturas reais e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
-| `src/componentes/ui/` | Peças compartilhadas: `Botao`, `Logo`, `faixa` (altura dos cabeçalhos) |
+| `src/componentes/ui/` | Peças do app: `BotaoIcone` (ícone + tooltip), `CartaoOpcao`, `Logo`, `faixa` (altura dos cabeçalhos) |
+| `src/components/ui/` | Componentes do shadcn/ui, gerados pelo CLI (`npx shadcn@latest add …`) |
 
 ### Lâminas
 
@@ -113,24 +114,34 @@ miniatura: `usarImagem` põe a foto no slot selecionado e **move a seleção par
 o próximo vazio**, para toques sucessivos preencherem slots sucessivos em vez
 de substituírem sempre o mesmo.
 
-### Tema claro e escuro
+### Tema claro e escuro e shadcn/ui
 
-As cores da interface são tokens semânticos (`fundo`, `painel`, `superficie`,
-`elevado`, `borda`, `texto`, `suave`, `tenue`, `realce`…) definidos em
-`index.css`. Cada um aponta para uma variável que troca de valor em `:root` e
-`:root.claro`, então o tema inteiro muda com uma classe no `<html>` — não há
-nenhum `dark:` espalhado pelos componentes. Sem preferência salva, o app segue
-o `prefers-color-scheme` do sistema.
+A interface usa **shadcn/ui** (estilo new-york, base Radix). Os componentes
+ficam em `src/components/ui/` — pasta em inglês de propósito: é a convenção do
+CLI, e manter assim permite `npx shadcn@latest add <componente>` sem mexer em
+nada. Não renomeie esses arquivos; o código do app continua em português em
+`src/componentes/`. Prefira compor os componentes do shadcn a criar botões,
+selects ou sliders à mão.
+
+As cores são os tokens do shadcn (`background`, `foreground`, `card`, `muted`,
+`muted-foreground`, `primary`, `accent`, `border`, `sidebar`…) mais `zona`
+(aviso de Stories/Reels), definidos em `index.css`. `primary` é o violeta da
+marca. O escuro é ligado pela classe `.dark` no `<html>` (aplicada por
+`useTemaStore`); `@custom-variant dark` faz a variante `dark:` seguir essa
+classe, e não o `prefers-color-scheme`. Sem preferência salva, o app segue o
+`prefers-color-scheme` do sistema na hora de escolher o tema inicial.
+
+O `toggle.tsx` foi ajustado: o item ligado usa `bg-primary/10 text-primary` em
+vez do `bg-accent` padrão, que ficava quase invisível. Ao reinstalar o
+componente pelo CLI, refaça esse ajuste.
 
 **A colagem não acompanha o tema.** `TelaColagem`, `SlotEditor` e
 `PreviewLayout` desenham sobre a `corFundo` que o usuário escolheu para
 exportar (branco ou preto) e por isso mantêm cores **literais**. Um placeholder
-em `text-suave` sobre uma colagem preta no tema claro sairia ilegível — e, pior,
-o que se vê deixaria de corresponder ao arquivo. Se for mexer em cor por lá,
-pergunte primeiro: isso é moldura do app ou conteúdo da colagem?
-
-Não use a variante `dark:` do Tailwind: no v4 ela segue `prefers-color-scheme`,
-não a nossa classe, e ficaria fora de sincronia com o botão de tema.
+em `text-muted-foreground` sobre uma colagem preta no tema claro sairia
+ilegível — e, pior, o que se vê deixaria de corresponder ao arquivo. Se for
+mexer em cor por lá, pergunte primeiro: isso é moldura do app ou conteúdo da
+colagem?
 
 ### Modelo de slots
 

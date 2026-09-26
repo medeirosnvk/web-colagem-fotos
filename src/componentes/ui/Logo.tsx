@@ -23,18 +23,18 @@ export function Logo({ size = 22, className = '' }: { size?: number; className?:
           width="11"
           height="13.2"
           rx="1.4"
-          className="fill-painel stroke-suave"
+          className="fill-background stroke-muted-foreground"
           strokeWidth="1.5"
         />
       </g>
 
       {/* folha da frente, colada por cima */}
       <g transform="rotate(8 15 11)">
-        <rect x="9.6" y="4.4" width="11.2" height="13.2" rx="1.4" className="fill-realce" />
-        <circle cx="13.1" cy="8.6" r="1.25" className="fill-painel" />
+        <rect x="9.6" y="4.4" width="11.2" height="13.2" rx="1.4" className="fill-primary" />
+        <circle cx="13.1" cy="8.6" r="1.25" className="fill-background" />
         <path
           d="M10.8 15.4 L13.4 12.1 L15.4 14.3 L17.1 12.7 L19.8 15.7"
-          className="stroke-painel"
+          className="stroke-background"
           strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"

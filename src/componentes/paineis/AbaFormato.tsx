@@ -3,6 +3,9 @@ import { useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId, formatosDe } from '../../data/formatos'
 import type { CorFundo, Destino, Plataforma } from '../../tipos'
 import { Secao } from './PainelLateral'
+import { CartaoOpcao } from '../ui/CartaoOpcao'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 const PLATAFORMAS: { id: Plataforma; nome: string; Icone: typeof Camera }[] = [
   { id: 'instagram', nome: 'Instagram', Icone: Camera },
@@ -19,30 +22,6 @@ const CORES: { valor: CorFundo; nome: string }[] = [
   { valor: '#FFFFFF', nome: 'Branco' },
   { valor: '#000000', nome: 'Preto' },
 ]
-
-function Chip({
-  ativo,
-  onClick,
-  children,
-}: {
-  ativo: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-medium transition-colors ${
-        ativo
-          ? 'border-violet-500 bg-violet-500/15 text-realce-forte'
-          : 'border-borda bg-superficie text-suave hover:border-borda-forte hover:text-texto'
-      }`}
-    >
-      {children}
-    </button>
-  )
-}
 
 export function AbaFormato() {
   const plataforma = useColagemStore((s) => s.plataforma)
@@ -63,95 +42,103 @@ export function AbaFormato() {
   return (
     <div className="space-y-6">
       <Secao titulo="Plataforma">
-        <div className="grid grid-cols-2 gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={plataforma}
+          // Radix deixa desmarcar tudo; aqui sempre há uma plataforma.
+          onValueChange={(v) => v && definirPlataforma(v as Plataforma)}
+          className="grid w-full grid-cols-2"
+        >
           {PLATAFORMAS.map(({ id, nome, Icone }) => (
-            <Chip key={id} ativo={plataforma === id} onClick={() => definirPlataforma(id)}>
-              <Icone size={14} /> {nome}
-            </Chip>
+            <ToggleGroupItem key={id} value={id} className="w-full text-xs">
+              <Icone /> {nome}
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </Secao>
 
       <Secao titulo="Destino">
-        <div className="grid grid-cols-3 gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={destino}
+          onValueChange={(v) => v && definirDestino(v as Destino)}
+          className="grid w-full grid-cols-3"
+        >
           {DESTINOS.map(({ id, nome, Icone }) => (
-            <Chip key={id} ativo={destino === id} onClick={() => definirDestino(id)}>
-              <Icone size={14} /> {nome}
-            </Chip>
+            <ToggleGroupItem key={id} value={id} className="w-full text-xs">
+              <Icone /> {nome}
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </Secao>
 
       <Secao titulo="Proporção">
         <div className="grid grid-cols-2 gap-2">
           {formatos.map((f) => (
-            <button
+            <CartaoOpcao
               key={f.id}
-              type="button"
+              ativo={formatoId === f.id}
               onClick={() => definirFormato(f.id)}
-              className={`flex flex-col items-center gap-2 rounded-lg border p-2.5 transition-colors ${
-                formatoId === f.id
-                  ? 'border-violet-500 bg-violet-500/10'
-                  : 'border-borda bg-superficie hover:border-borda-forte'
-              }`}
+              className="gap-2 p-2.5"
             >
               <span className="flex h-12 items-center justify-center">
                 <span
-                  className="block rounded-sm border border-borda-forte bg-elevado"
+                  className="block rounded-sm border border-muted-foreground/40 bg-muted"
                   style={{ height: 44, width: Math.min(72, (44 * f.largura) / f.altura) }}
                 />
               </span>
-              <span className="flex items-center gap-1 text-xs font-medium text-texto">
+              <span className="flex items-center gap-1 text-xs font-medium">
                 {f.proporcao}
-                {f.recomendado && <Star size={10} className="fill-amber-400 text-amber-400" />}
+                {f.recomendado && <Star className="size-2.5 fill-amber-400 text-amber-400" />}
               </span>
-              <span className="text-[10px] text-suave">
+              <span className="text-[10px] text-muted-foreground tabular-nums">
                 {f.largura}×{f.altura}
               </span>
-            </button>
+            </CartaoOpcao>
           ))}
         </div>
 
         {formato?.observacao && (
-          <p className="mt-2 flex items-start gap-1.5 text-[11px] leading-relaxed text-suave">
-            <Info size={12} className="mt-0.5 shrink-0 text-realce" />
+          <p className="mt-2.5 flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
+            <Info className="mt-0.5 size-3 shrink-0 text-primary" />
             {formato.observacao}
           </p>
         )}
 
         {avisoGrid && (
-          <p className="mt-2 flex items-start gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2.5 text-[11px] leading-relaxed text-amber-200">
-            <Info size={12} className="mt-0.5 shrink-0" />
-            <span>
-              No grid do perfil o Instagram recorta para <strong>3:4</strong>. Centralize o que
-              importa — ou escolha 3:4 para ver exatamente a miniatura.
-            </span>
-          </p>
+          <Alert className="mt-2.5 border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-200">
+            <Info />
+            <AlertDescription className="text-xs text-inherit">
+              <span>
+                No grid do perfil o Instagram recorta para <strong>3:4</strong>. Centralize o que
+                importa — ou escolha 3:4 para ver exatamente a miniatura.
+              </span>
+            </AlertDescription>
+          </Alert>
         )}
       </Secao>
 
       <Secao titulo="Cor de fundo">
-        <div className="grid grid-cols-2 gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={corFundo}
+          onValueChange={(v) => v && definirCorFundo(v as CorFundo)}
+          className="grid w-full grid-cols-2"
+        >
           {CORES.map(({ valor, nome }) => (
-            <button
-              key={valor}
-              type="button"
-              onClick={() => definirCorFundo(valor)}
-              className={`flex items-center gap-2 rounded-lg border p-2.5 text-xs transition-colors ${
-                corFundo === valor
-                  ? 'border-violet-500 bg-violet-500/10 text-texto'
-                  : 'border-borda bg-superficie text-suave hover:border-borda-forte'
-              }`}
-            >
+            <ToggleGroupItem key={valor} value={valor} className="w-full justify-start text-xs">
               <span
-                className="h-5 w-5 shrink-0 rounded border border-borda-forte"
+                className="size-4 shrink-0 rounded-sm border border-muted-foreground/40"
                 style={{ backgroundColor: valor }}
               />
               {nome}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
-        <p className="mt-2 text-[11px] leading-relaxed text-tenue">
+        </ToggleGroup>
+        <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
           Preenche margens e vãos entre as fotos — no editor e no arquivo exportado.
         </p>
       </Secao>

@@ -4,6 +4,8 @@ import { formatoPorId } from '../../data/formatos'
 import { DESCRICAO_ESTILO, layoutsAgrupados, ROTULO_ESTILO } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
 import { PreviewLayout } from '../PreviewLayout'
+import { CartaoOpcao } from '../ui/CartaoOpcao'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 const LARGURA_PREVIEW = 100
 const ALTURA_MAX_PREVIEW = 112
@@ -36,25 +38,28 @@ export function AbaLayout() {
   const total = visiveis.reduce((n, g) => n + g.layouts.length, 0)
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <div>
-        <div className="flex flex-wrap gap-1.5">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          size="sm"
+          spacing={1}
+          value={filtro === null ? 'todos' : String(filtro)}
+          onValueChange={(v) => v && setFiltro(v === 'todos' ? null : Number(v))}
+          className="flex-wrap"
+        >
           {[null, ...quantidades].map((q) => (
-            <button
+            <ToggleGroupItem
               key={q ?? 'todos'}
-              type="button"
-              onClick={() => setFiltro(q)}
-              className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
-                filtro === q
-                  ? 'border-violet-500 bg-violet-500/15 text-realce-forte'
-                  : 'border-borda bg-superficie text-suave hover:border-borda-forte'
-              }`}
+              value={q === null ? 'todos' : String(q)}
+              className="h-7 rounded-full! px-2.5 text-xs"
             >
               {q === null ? 'Todos' : `${q} ${q === 1 ? 'foto' : 'fotos'}`}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
-        <p className="mt-2 text-[11px] text-tenue">
+        </ToggleGroup>
+        <p className="mt-2.5 text-xs text-muted-foreground">
           {total} {total === 1 ? 'opção' : 'opções'} para {formato.proporcao}. Trocar de layout
           mantém as fotos já posicionadas.
         </p>
@@ -62,8 +67,8 @@ export function AbaLayout() {
 
       {visiveis.map(({ estilo, layouts }) => (
         <section key={estilo}>
-          <h3 className="text-xs font-medium text-texto">{ROTULO_ESTILO[estilo]}</h3>
-          <p className="mt-0.5 mb-2 text-[11px] leading-snug text-tenue">
+          <h3 className="text-sm font-medium">{ROTULO_ESTILO[estilo]}</h3>
+          <p className="mt-0.5 mb-2.5 text-xs leading-snug text-muted-foreground">
             {DESCRICAO_ESTILO[estilo]}
           </p>
 
@@ -75,16 +80,12 @@ export function AbaLayout() {
               const escala = Math.min(1, ALTURA_MAX_PREVIEW / alturaBase)
 
               return (
-                <button
+                <CartaoOpcao
                   key={l.id}
-                  type="button"
+                  ativo={layoutId === l.id}
                   onClick={() => definirLayout(l.id)}
                   title={l.nome}
-                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-colors ${
-                    layoutId === l.id
-                      ? 'border-violet-500 bg-violet-500/10'
-                      : 'border-borda bg-superficie hover:border-borda-forte'
-                  }`}
+                  className="gap-1.5"
                 >
                   <span
                     className="flex items-center justify-center"
@@ -97,10 +98,10 @@ export function AbaLayout() {
                       corFundo={corFundo}
                     />
                   </span>
-                  <span className="text-center text-[10px] leading-tight text-suave">
+                  <span className="text-center text-[11px] leading-tight text-muted-foreground">
                     {l.nome}
                   </span>
-                </button>
+                </CartaoOpcao>
               )
             })}
           </div>

@@ -5,6 +5,7 @@ import { layoutPorId } from '../data/layouts'
 import { useMedidas } from '../lib/useMedidas'
 import { TelaColagem } from './editor/TelaColagem'
 import { FAIXA } from './ui/faixa'
+import { Badge } from '@/components/ui/badge'
 
 /** Respiro entre a colagem e as bordas da área central. */
 const FOLGA = 48
@@ -30,32 +31,28 @@ export function AreaColagem() {
   const folga = largura < 560 ? FOLGA_ESTREITA : FOLGA
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className={`${FAIXA} justify-between gap-4 px-6`}>
-        <p className="truncate text-xs text-suave">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-muted/40 dark:bg-background">
+      <div className={`${FAIXA} justify-between gap-4 bg-background px-6`}>
+        <p className="flex min-w-0 items-center gap-2 truncate text-xs text-muted-foreground">
           {totalLaminas > 1 && (
-            <>
-              <span className="font-medium text-realce-forte">
-                Lâmina {indice + 1}/{totalLaminas}
-              </span>
-              <span className="text-tenue"> · </span>
-            </>
+            <Badge variant="outline" className="shrink-0 border-primary/40 text-primary tabular-nums">
+              Lâmina {indice + 1}/{totalLaminas}
+            </Badge>
           )}
-          <span className="font-medium text-texto">{layout.nome}</span>
-          <span className="text-tenue"> · </span>
-          {formato.largura}×{formato.altura} px
-          <span className="text-tenue"> · </span>
-          {preenchidos} de {slots.length} slots
+          <span className="truncate font-medium text-foreground">{layout.nome}</span>
+          <span className="tabular-nums">
+            {formato.largura}×{formato.altura} px · {preenchidos} de {slots.length} slots
+          </span>
         </p>
-        <p className="hidden shrink-0 items-center gap-1.5 text-xs text-suave xl:flex">
-          <MousePointer2 size={12} /> arraste para trocar de lugar · clique e arraste para
-          reposicionar
+        <p className="hidden shrink-0 items-center gap-1.5 text-xs text-muted-foreground xl:flex">
+          <MousePointer2 className="size-3" /> arraste para trocar de lugar · clique e arraste
+          para reposicionar
         </p>
       </div>
 
       {temZonaSegura && (
-        <p className="border-b border-borda bg-cyan-500/10 px-6 py-1.5 text-[11px] text-zona">
-          <Info size={11} className="mr-1 inline" />
+        <p className="border-b bg-cyan-500/10 px-6 py-1.5 text-xs text-zona">
+          <Info className="mr-1 inline size-3" />
           As faixas pontilhadas <strong>não são cortadas</strong> — é onde o
           {destino === 'reels' ? ' Reels' : ' Stories'} desenha perfil, legenda e botões por cima.
         </p>
@@ -82,7 +79,7 @@ export function AreaColagem() {
 
         {!temImagens && (
           <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
-            <p className="rounded-full border border-borda-forte bg-superficie/90 px-4 py-1.5 text-xs text-texto shadow-lg">
+            <p className="rounded-full border bg-popover/95 px-4 py-1.5 text-xs text-popover-foreground shadow-lg backdrop-blur">
               Carregue fotos na barra da esquerda e arraste para os slots.
             </p>
           </div>

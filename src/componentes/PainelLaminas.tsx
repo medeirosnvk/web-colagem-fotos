@@ -6,6 +6,10 @@ import { layoutPorId } from '../data/layouts'
 import { TelaColagem } from './editor/TelaColagem'
 import { FAIXA } from './ui/faixa'
 import type { Lamina } from '../tipos'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 
 const LARGURA_MINIATURA = 84
 const ALTURA_MAX_MINIATURA = 118
@@ -29,18 +33,26 @@ function Acao({
   children: ReactNode
 }) {
   return (
-    <button
-      type="button"
-      title={titulo ?? rotulo}
-      aria-label={rotulo}
-      onClick={onClick}
-      disabled={desabilitado}
-      className={`flex flex-1 items-center justify-center rounded py-1 text-suave transition-colors hover:bg-elevado disabled:pointer-events-none disabled:opacity-30 ${
-        perigo ? 'hover:text-red-400' : 'hover:text-realce-forte'
-      }`}
-    >
-      {children}
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex flex-1">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={rotulo}
+            onClick={onClick}
+            disabled={desabilitado}
+            className={cn(
+              'flex-1 text-muted-foreground',
+              perigo && 'hover:bg-destructive/10 hover:text-destructive',
+            )}
+          >
+            {children}
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">{titulo ?? rotulo}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -62,11 +74,10 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
         onClick={() => selecionar(lamina.id)}
         title={`${layout?.nome ?? 'Lâmina'} · ${preenchidos} de ${lamina.slots.length} slots`}
         aria-current={ativa ? 'true' : undefined}
-        className={`block w-full rounded-lg border p-1.5 transition-colors ${
-          ativa
-            ? 'border-violet-500 bg-violet-500/10'
-            : 'border-borda bg-superficie hover:border-borda-forte'
-        }`}
+        className={cn(
+          'block w-full cursor-pointer rounded-lg border bg-card p-1.5 shadow-xs transition-colors hover:bg-accent',
+          ativa && 'border-primary bg-primary/5 ring-1 ring-primary/40 hover:bg-primary/10',
+        )}
       >
         <span className="flex items-center justify-center">
           <TelaColagem
@@ -77,8 +88,8 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
             lamina={lamina}
           />
         </span>
-        <span className="mt-1 flex items-center justify-between px-0.5 text-[10px] text-suave">
-          <span className={ativa ? 'font-semibold text-realce-forte' : ''}>{numero}</span>
+        <span className="mt-1 flex items-center justify-between px-0.5 text-[10px] text-muted-foreground">
+          <span className={cn(ativa && 'font-semibold text-primary')}>{numero}</span>
           <span className="tabular-nums">
             {preenchidos}/{lamina.slots.length}
           </span>
@@ -92,10 +103,10 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
           onClick={() => esvaziar(lamina.id)}
           desabilitado={preenchidos === 0}
         >
-          <Eraser size={12} />
+          <Eraser />
         </Acao>
         <Acao rotulo={`Duplicar lâmina ${numero}`} onClick={() => duplicar(lamina.id)}>
-          <Copy size={12} />
+          <Copy />
         </Acao>
         <Acao
           rotulo={`Remover lâmina ${numero}`}
@@ -104,7 +115,7 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
           desabilitado={total <= 1}
           perigo
         >
-          <Trash2 size={12} />
+          <Trash2 />
         </Acao>
       </div>
     </div>
@@ -139,16 +150,22 @@ export function ConteudoLaminas({ horizontal = false }: { horizontal?: boolean }
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={adicionar}
-        title={titulo}
-        className={`flex items-center justify-center gap-1.5 rounded-lg border border-dashed border-borda-forte text-[11px] text-suave transition-colors hover:border-violet-500 hover:text-realce-forte ${
-          horizontal ? 'w-24 shrink-0 flex-col' : 'w-full py-3'
-        }`}
-      >
-        <Plus size={13} /> Lâmina
-      </button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={adicionar}
+            className={cn(
+              'border-dashed text-xs text-muted-foreground',
+              horizontal ? 'h-auto w-24 shrink-0 flex-col' : 'w-full',
+            )}
+          >
+            <Plus /> Lâmina
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">{titulo}</TooltipContent>
+      </Tooltip>
     </div>
   )
 }
@@ -162,13 +179,13 @@ export function PainelLaminas() {
   const laminas = useColagemStore((s) => s.laminas)
 
   return (
-    <aside className="flex w-32 shrink-0 flex-col border-r border-borda bg-painel">
+    <aside className="flex w-32 shrink-0 flex-col border-r bg-sidebar">
       <header className={`${FAIXA} gap-1.5 px-3`}>
-        <Layers size={14} className="text-realce" />
-        <h2 className="text-xs font-semibold text-texto">Lâminas</h2>
-        <span className="rounded-full bg-elevado px-1.5 text-[10px] text-suave">
+        <Layers className="size-3.5 text-muted-foreground" />
+        <h2 className="text-xs font-medium">Lâminas</h2>
+        <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px] tabular-nums">
           {laminas.length}
-        </span>
+        </Badge>
       </header>
 
       <ConteudoLaminas />

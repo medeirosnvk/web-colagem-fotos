@@ -26,7 +26,7 @@ function preferido(): Tema {
 }
 
 function aplicar(tema: Tema) {
-  document.documentElement.classList.toggle('claro', tema === 'claro')
+  document.documentElement.classList.toggle('dark', tema === 'escuro')
   try {
     localStorage.setItem(CHAVE, tema)
   } catch {
@@ -36,7 +36,7 @@ function aplicar(tema: Tema) {
 
 const inicial = preferido()
 // Aplica antes do primeiro render para não piscar o tema errado.
-document.documentElement.classList.toggle('claro', inicial === 'claro')
+document.documentElement.classList.toggle('dark', inicial === 'escuro')
 
 export const useTemaStore = create<EstadoTema>((set, get) => ({
   tema: inicial,
