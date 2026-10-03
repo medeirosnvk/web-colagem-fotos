@@ -211,8 +211,16 @@ nada é `null`. É isso que permite a tela única funcionar sem gating.
 
 ### Sugestão de layouts
 
-- Topo da aba Layout: "Sugeridos para suas fotos". As fotos-base são as **da lâmina
-  ativa**; senão as **não usadas**; senão todas (ordem da bandeja, no máximo 9).
+- Topo da aba Layout: "Sugeridos para suas fotos". As fotos-base são as
+  **selecionadas na bandeja**; senão as **da lâmina ativa**; senão as **não usadas**;
+  senão todas (ordem da bandeja, no máximo 9).
+- Seleção de fotos (`fotosSelecionadas`, estado de tela, fora do desfazer):
+  Ctrl/⌘ + clique marca/desmarca, Shift + clique marca um intervalo, e a bolinha no
+  canto da miniatura faz o mesmo sem teclado (aparece sempre em telas de toque).
+  **No Mac, Control + clique dispara `contextmenu` e não `click`** — por isso a
+  miniatura também trata `onContextMenu` com `ctrlKey`. Clique simples continua
+  pondo a foto no slot. A seleção acompanha girar (novo id), some ao remover a foto e
+  é limpa ao aplicar uma sugestão.
 - Nota de um par foto↔slot = fração da foto que aparece no cover:
   `min(p, s) / max(p, s)` (p, s = largura/altura em px do formato). O pareamento
   ordena fotos e slots pela proporção e casa por programação dinâmica — também

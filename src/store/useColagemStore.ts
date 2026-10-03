@@ -34,6 +34,11 @@ interface Documento {
 interface EstadoColagem extends Documento {
   laminaAtivaId: string
   slotSelecionado: string | null
+  /**
+   * Fotos marcadas na bandeja (Ctrl/⌘ + clique, Shift + clique para intervalo).
+   * Estado de tela, fora do desfazer — guia a sugestão de layouts.
+   */
+  fotosSelecionadas: string[]
   passado: Documento[]
   futuro: Documento[]
 
@@ -45,6 +50,9 @@ interface EstadoColagem extends Documento {
   /** Tira todas as fotos da bandeja e dos slots; lâminas, layouts e formato ficam. Desfazível. */
   removerTodasImagens: () => void
   ordenarImagens: (ordem: OrdemFotos) => void
+  /** Marca/desmarca uma foto; com `intervalo`, marca da última marcada até esta. */
+  alternarSelecaoFoto: (id: string, intervalo?: boolean) => void
+  limparSelecaoFotos: () => void
   /** Gira a foto 90° em toda a parte (bandeja e lâminas). Desfazível. */
   girarImagem: (id: string, sentido: 1 | -1) => Promise<void>
   limparTudo: () => void
@@ -231,7 +239,13 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
   function editar(
     fn: (
       s: EstadoColagem,
-    ) => (Partial<Documento> & { slotSelecionado?: string | null; laminaAtivaId?: string }) | null,
+    ) =>
+      | (Partial<Documento> & {
+          slotSelecionado?: string | null
+          laminaAtivaId?: string
+          fotosSelecionadas?: string[]
+        })
+      | null,
     tag?: string,
   ) {
     set((s) => {
@@ -256,6 +270,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
     ...inicial,
     laminaAtivaId: inicial.laminas[0].id,
     slotSelecionado: null,
+    fotosSelecionadas: [],
     passado: [],
     futuro: [],
 
@@ -297,6 +312,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
     removerImagem: (id) =>
       editar((s) => ({
         imagens: s.imagens.filter((i) => i.id !== id),
+        fotosSelecionadas: s.fotosSelecionadas.filter((x) => x !== id),
         // a foto some de todas as lâminas, não só da que está em edição
         laminas: s.laminas.map((l) => ({
           ...l,
@@ -311,6 +327,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         s.imagens.length === 0
           ? null
           : {
+              fotosSelecionadas: [],
               imagens: [],
               laminas: s.laminas.map((l) => ({
                 ...l,
@@ -343,6 +360,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
       registro.set(girada.id, girada)
       editar((s) => ({
         imagens: s.imagens.map((i) => (i.id === id ? girada : i)),
+        fotosSelecionadas: s.fotosSelecionadas.map((x) => (x === id ? girada.id : x)),
         // a proporção mudou: zoom e posição voltam ao cover centralizado
         laminas: s.laminas.map((l) => ({
           ...l,
@@ -355,6 +373,25 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
       }))
     },
 
+    alternarSelecaoFoto: (id, intervalo = false) =>
+      set((s) => {
+        const marcadas = s.fotosSelecionadas.filter((x) => s.imagens.some((i) => i.id === x))
+        const ultima = marcadas[marcadas.length - 1]
+        if (intervalo && ultima) {
+          const ids = s.imagens.map((i) => i.id)
+          const [a, b] = [ids.indexOf(ultima), ids.indexOf(id)].sort((x, y) => x - y)
+          const faixa = ids.slice(a, b + 1)
+          return { fotosSelecionadas: [...marcadas.filter((x) => !faixa.includes(x)), ...faixa] }
+        }
+        return {
+          fotosSelecionadas: marcadas.includes(id)
+            ? marcadas.filter((x) => x !== id)
+            : [...marcadas, id],
+        }
+      }),
+
+    limparSelecaoFotos: () => set({ fotosSelecionadas: [] }),
+
     /** Recomeço do zero: descarta o histórico, então as imagens somem de vez. */
     limparTudo: () => {
       ultimaTag = null
@@ -363,6 +400,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
         ...doc,
         laminaAtivaId: doc.laminas[0].id,
         slotSelecionado: null,
+        fotosSelecionadas: [],
         passado: [],
         futuro: [],
       })
@@ -456,7 +494,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
             imagemId: porSlot.get(slot.slotId),
           })),
         }))
-        return patch && { ...patch, slotSelecionado: null }
+        return patch && { ...patch, slotSelecionado: null, fotosSelecionadas: [] }
       }),
 
     definirEspacamento: (gap, margem) =>

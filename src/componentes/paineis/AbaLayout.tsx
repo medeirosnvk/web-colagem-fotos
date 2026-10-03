@@ -24,14 +24,18 @@ export function AbaLayout() {
   const aplicarSugestao = useColagemStore((s) => s.aplicarSugestao)
   const imagens = useColagemStore((s) => s.imagens)
   const laminas = useColagemStore((s) => s.laminas)
+  const fotosSelecionadas = useColagemStore((s) => s.fotosSelecionadas)
 
   const { layoutId, gap, margem } = lamina
 
   const [filtro, setFiltro] = useState<Filtro>(null)
 
-  // Fotos que guiam a sugestão: as da lâmina em edição; senão as ainda não
-  // usadas em nenhuma lâmina; senão todas — sempre na ordem da bandeja.
+  // Fotos que guiam a sugestão: as selecionadas na bandeja; senão as da lâmina em
+  // edição; senão as ainda não usadas; senão todas — sempre na ordem da bandeja.
   const { fotosBase, origem } = useMemo(() => {
+    const marcadas = new Set(fotosSelecionadas)
+    const selecionadas = imagens.filter((i) => marcadas.has(i.id))
+    if (selecionadas.length) return { fotosBase: selecionadas, origem: 'selecionadas' }
     const naLamina = new Set(lamina.slots.map((x) => x.imagemId).filter(Boolean))
     const daLamina = imagens.filter((i) => naLamina.has(i.id))
     if (daLamina.length) return { fotosBase: daLamina, origem: 'desta lâmina' }
@@ -39,7 +43,7 @@ export function AbaLayout() {
     const livres = imagens.filter((i) => !usadas.has(i.id))
     if (livres.length) return { fotosBase: livres, origem: 'ainda não usadas' }
     return { fotosBase: imagens, origem: 'da bandeja' }
-  }, [imagens, laminas, lamina])
+  }, [imagens, laminas, lamina, fotosSelecionadas])
 
   const formatoAtual = formatoPorId(formatoId)
   const sugestoes = useMemo(

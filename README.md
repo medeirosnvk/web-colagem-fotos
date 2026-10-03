@@ -105,7 +105,7 @@ exatamente o que sai no arquivo.
 2. **Aba Formato** — troque entre Instagram/Facebook e Feed/Stories/Reels: as proporções
    mudam junto e a colagem se reajusta na hora. No feed do Instagram aparece o aviso do
    recorte 3:4 do grid. A cor de fundo (branco/preto) também mora aqui.
-3. **Aba Layout** — veja as **sugestões para as suas fotos** (layouts ordenados pela proporção das fotos, com a % de cada foto que aparece; ao escolher, cada foto já vai para o espaço certo), filtre por quantidade de fotos e escolha entre os 64 layouts. Trocar de
+3. **Aba Layout** — selecione fotos na bandeja com **Ctrl/⌘ + clique** (ou Shift para um intervalo) e veja as **sugestões para as suas fotos** (layouts ordenados pela proporção das fotos, com a % de cada foto que aparece; ao escolher, cada foto já vai para o espaço certo), filtre por quantidade de fotos e escolha entre os 64 layouts. Trocar de
    layout **mantém as fotos já posicionadas**, na ordem, e vale só para a lâmina em edição.
 4. **Montagem** — arraste miniaturas da bandeja para os slots, ou clique numa miniatura para
    pôr no slot selecionado. Já dentro da colagem, o arrasto de uma foto faz duas coisas
