@@ -42,7 +42,9 @@ componentes também são em português. Mantenha esse padrão.
    escala de preview. Se você mudar como uma delas posiciona algo, mude a
    outra na mesma edição — senão o arquivo deixa de bater com o que o usuário
    vê. Esse é o requisito central do projeto.
-4. **Formatos e layouts são dados, não código.** Novos formatos entram em
+4. **Formatos e layouts são dados, não código.** Um layout vale para as `orientacoes`
+   listadas e, opcionalmente, só para `proporcoes` exatas (ex.: um layout calculado para
+   Stories 9:16 não deve aparecer no 3:4, que também é "vertical"). Novos formatos entram em
    `src/data/formatos.ts`; novos layouts em `src/data/layouts.ts`. Não codifique
    dimensões nem posições dentro de componentes.
 5. **Overlays do editor não são exportados.** Zonas seguras, anel de seleção e

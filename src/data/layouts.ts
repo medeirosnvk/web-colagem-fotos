@@ -11,7 +11,7 @@ function slot(id: string, x: number, y: number, w: number, h: number): SlotLayou
   return { id, x, y, w, h }
 }
 
-type Opcoes = Partial<Pick<Layout, 'gap' | 'margem' | 'contorno' | 'linhaInterna'>>
+type Opcoes = Partial<Pick<Layout, 'gap' | 'margem' | 'contorno' | 'linhaInterna' | 'proporcoes'>>
 
 function montar(
   id: string,
@@ -33,6 +33,7 @@ function montar(
     margem: opcoes.margem ?? 0,
     contorno: opcoes.contorno,
     linhaInterna: opcoes.linhaInterna,
+    proporcoes: opcoes.proporcoes,
     slots,
   }
 }
@@ -284,6 +285,16 @@ export const CATALOGO: Record<string, Layout> = {
       slot('s2', 0.08, 0.56, 0.41, 0.26),
       slot('s3', 0.51, 0.56, 0.41, 0.26),
     ],
+  ),
+  // Stories 9:16: espaços em 1,5 (foto de câmera 3:2) — 950×634 px cada, centralizados
+  // e fora das zonas seguras de 250 px do topo e da base.
+  'moldura-stories-duas-paisagens': montar(
+    'moldura-stories-duas-paisagens',
+    '2 paisagens — Stories centralizadas',
+    'moldura',
+    EM_PE,
+    [slot('s1', 0.06, 0.155, 0.88, 0.33), slot('s2', 0.06, 0.515, 0.88, 0.33)],
+    { proporcoes: ['9:16'] },
   ),
   'moldura-mosaico-legenda': montar(
     'moldura-mosaico-legenda',
@@ -595,7 +606,10 @@ export function layoutsAgrupados(
   proporcao: ProporcaoId,
 ): { estilo: EstiloLayout; layouts: Layout[] }[] {
   const orientacao = orientacaoDe(proporcao)
-  const cabem = Object.values(CATALOGO).filter((l) => l.orientacoes.includes(orientacao))
+  const cabem = Object.values(CATALOGO).filter(
+    (l) =>
+      l.orientacoes.includes(orientacao) && (!l.proporcoes || l.proporcoes.includes(proporcao)),
+  )
 
   return ORDEM_ESTILOS.map((estilo) => {
     const layouts = cabem.filter((l) => l.estilo === estilo)

@@ -43,6 +43,11 @@ export interface Layout {
   estilo: EstiloLayout
   /** Proporções em que este layout faz sentido. */
   orientacoes: Orientacao[]
+  /**
+   * Restringe a proporções exatas, além da orientação — para layouts calculados
+   * para um formato só (ex.: Stories 9:16). Ausente = vale para toda a orientação.
+   */
+  proporcoes?: ProporcaoId[]
   qtdFotos: number
   /** Espaçamento entre slots, em px na base de largura 1080. */
   gap: number
