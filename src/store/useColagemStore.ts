@@ -3,6 +3,7 @@ import type { CorFundo, Destino, EstadoSlot, Imagem, Lamina, OrdemFotos, Platafo
 import { formatoPorId, formatosDe } from '../data/formatos'
 import { layoutPorId, layoutsDe } from '../data/layouts'
 import { clamp } from '../lib/cover'
+import { girarImagem } from '../lib/girarImagem'
 
 /** Quantos passos de histórico ficam guardados. */
 const LIMITE_HISTORICO = 60
@@ -44,6 +45,8 @@ interface EstadoColagem extends Documento {
   /** Tira todas as fotos da bandeja e dos slots; lâminas, layouts e formato ficam. Desfazível. */
   removerTodasImagens: () => void
   ordenarImagens: (ordem: OrdemFotos) => void
+  /** Gira a foto 90° em toda a parte (bandeja e lâminas). Desfazível. */
+  girarImagem: (id: string, sentido: 1 | -1) => Promise<void>
   limparTudo: () => void
 
   definirPlataforma: (plataforma: Plataforma) => void
@@ -327,6 +330,30 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
           ? null
           : { ordemFotos: ordem, imagens: ordenar(s.imagens, ordem) },
       ),
+
+    girarImagem: async (id, sentido) => {
+      const original = get().imagens.find((i) => i.id === id)
+      if (!original) return
+      const girada = await girarImagem(original, sentido)
+      // a foto pode ter saído da bandeja enquanto o canvas trabalhava
+      if (!get().imagens.some((i) => i.id === id)) {
+        URL.revokeObjectURL(girada.url)
+        return
+      }
+      registro.set(girada.id, girada)
+      editar((s) => ({
+        imagens: s.imagens.map((i) => (i.id === id ? girada : i)),
+        // a proporção mudou: zoom e posição voltam ao cover centralizado
+        laminas: s.laminas.map((l) => ({
+          ...l,
+          slots: l.slots.map((slot) =>
+            slot.imagemId === id
+              ? { slotId: slot.slotId, imagemId: girada.id, escala: 1, offsetX: 0, offsetY: 0 }
+              : slot,
+          ),
+        })),
+      }))
+    },
 
     /** Recomeço do zero: descarta o histórico, então as imagens somem de vez. */
     limparTudo: () => {

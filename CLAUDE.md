@@ -60,6 +60,7 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
+| `src/lib/girarImagem.ts` | Gira a foto 90° num canvas local e devolve uma **nova** `Imagem` (novo id e Object URL) |
 | `src/lib/sugerirLayouts.ts` | Sugestão de layouts pela proporção das fotos (pareamento foto↔slot e % visível no cover) |
 | `src/lib/dataCaptura.ts` | Data em que a foto foi tirada (EXIF de JPEG/WebP, parser próprio, sem rede); sem EXIF, data do arquivo |
 | `src/lib/layoutEfetivo.ts` | Aplica gap e margem do usuário sobre o layout do catálogo |
@@ -195,6 +196,16 @@ nada é `null`. É isso que permite a tela única funcionar sem gating.
   (recomeço do zero, descarta o histórico).
 - O filete (`linhaInterna`) é **branco e desenhado por cima de tudo**: num
   layout novo, ele precisa cair sobre a foto, senão some no fundo branco.
+
+### Girar foto
+
+- Botão na miniatura da bandeja (90° horário) e, na aba Ajustes, ↺/↻ para a foto
+  do slot selecionado. `girarImagem` no store gera uma imagem nova e troca o id
+  na bandeja **e em todas as lâminas**, zerando zoom/posição (a proporção mudou).
+- Não existe "ângulo" no documento: editor, exportação e sugestões leem a foto já
+  girada. A versão anterior continua no `registro` para o desfazer e só é
+  revogada pelo `coletarLixo` quando nenhum ponto do histórico a alcança.
+- A foto girada é recodificada (PNG/WebP/JPEG 0,95 conforme a extensão).
 
 ### Sugestão de layouts
 

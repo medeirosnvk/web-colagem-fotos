@@ -1,7 +1,16 @@
 import { useCallback, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { useDropzone } from 'react-dropzone'
-import { ArrowDownUp, ImagePlus, Images, Loader2, ShieldCheck, Trash2, X } from 'lucide-react'
+import {
+  ArrowDownUp,
+  ImagePlus,
+  Images,
+  Loader2,
+  RotateCw,
+  ShieldCheck,
+  Trash2,
+  X,
+} from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
 import { FAIXA } from './ui/faixa'
 import { BotaoIcone } from './ui/BotaoIcone'
@@ -25,6 +34,8 @@ import { cn } from '@/lib/utils'
 function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
   const removerImagem = useColagemStore((s) => s.removerImagem)
   const usarImagem = useColagemStore((s) => s.usarImagem)
+  const girarImagem = useColagemStore((s) => s.girarImagem)
+  const [girando, setGirando] = useState(false)
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `imagem:${imagem.id}`,
     data: { tipo: 'imagem', imagemId: imagem.id },
@@ -54,6 +65,26 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
           em uso
         </Badge>
       )}
+      <button
+        type="button"
+        disabled={girando}
+        onClick={async () => {
+          setGirando(true)
+          try {
+            await girarImagem(imagem.id, 1)
+          } finally {
+            setGirando(false)
+          }
+        }}
+        title="Girar 90° (sentido horário)"
+        aria-label="Girar foto"
+        className={cn(
+          'absolute top-1 right-7 cursor-pointer rounded-full bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:text-primary focus-visible:opacity-100',
+          girando && 'opacity-100',
+        )}
+      >
+        {girando ? <Loader2 className="size-3 animate-spin" /> : <RotateCw className="size-3" />}
+      </button>
       <button
         type="button"
         onClick={() => removerImagem(imagem.id)}

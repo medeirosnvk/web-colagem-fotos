@@ -11,7 +11,7 @@ Tudo acontece numa **tela só**: bandeja de fotos e pilha de lâminas à esquerd
 centro, painel com abas (Formato · Layout · Ajustes) à direita e a exportação no topo. Um
 documento tem **várias lâminas** — cada uma com seu layout e preenchimento, todas
 compartilhando fotos, formato e cor de fundo — e você exporta uma ou todas de uma vez.
-Qualquer escolha pode ser mudada a qualquer momento, e todo o histórico tem desfazer/refazer
+Fotos tortas podem ser **giradas 90°** direto na bandeja ou na aba Ajustes. Qualquer escolha pode ser mudada a qualquer momento, e todo o histórico tem desfazer/refazer
 (`Ctrl+Z` / `Ctrl+Shift+Z`).
 
 ## Rodando

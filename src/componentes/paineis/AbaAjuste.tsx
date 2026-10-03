@@ -1,4 +1,12 @@
-import { Eraser, Maximize2, MousePointer2, RotateCcw, Wand2 } from 'lucide-react'
+import {
+  Eraser,
+  Maximize2,
+  MousePointer2,
+  RotateCcw,
+  RotateCcwSquare,
+  RotateCwSquare,
+  Wand2,
+} from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
@@ -18,6 +26,7 @@ export function AbaAjuste() {
   const esvaziar = useColagemStore((s) => s.esvaziarLamina)
   const alternarPermitirReduzir = useColagemStore((s) => s.alternarPermitirReduzir)
   const definirEspacamento = useColagemStore((s) => s.definirEspacamento)
+  const girarImagem = useColagemStore((s) => s.girarImagem)
 
   const { slots, gap, margem } = lamina
   const slot = slots.find((s) => s.slotId === slotSelecionado)
@@ -66,6 +75,25 @@ export function AbaAjuste() {
                 onValueChange={([v]) => ajustarSlot(slot.slotId, { offsetY: v })}
               />
             </Controle>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => slot.imagemId && girarImagem(slot.imagemId, -1)}
+                title="Girar a foto 90° no sentido anti-horário"
+              >
+                <RotateCcwSquare /> Girar
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => slot.imagemId && girarImagem(slot.imagemId, 1)}
+                title="Girar a foto 90° no sentido horário"
+              >
+                <RotateCwSquare /> Girar
+              </Button>
+            </div>
 
             <Button
               variant="outline"
