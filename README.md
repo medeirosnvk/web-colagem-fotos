@@ -47,12 +47,12 @@ corresponda ao que aparece na tela.
 
 Os slots são retângulos livres em coordenadas relativas — não precisam ladrilhar a tela
 nem ser disjuntos. Quando se sobrepõem, vale a ordem do array (o último é desenhado por
-cima). São 55 layouts, agrupados em quatro estilos:
+cima). São 63 layouts, agrupados em quatro estilos:
 
 | Estilo | O que é |
 | --- | --- |
 | **Grades** | Fotos encostadas, preenchendo a tela inteira (1, 2, 3, 4 e 6 fotos). |
-| **Moldura e respiro** | Fotos flutuando na cor de fundo, com área livre para texto: polaroide, faixa central, espaço para título, tela cheia com filete, passe-partout, foto no topo com rodapé livre, foto lateral com texto ao lado, moldura larga para paisagem e composições de 2, 3 e 4 fotos com respiro. |
+| **Moldura e respiro** | Fotos flutuando na cor de fundo, com área livre para texto: polaroide, faixa central, espaço para título, tela cheia com filete, passe-partout, foto no topo com rodapé livre, foto lateral com texto ao lado, moldura larga para paisagem, composições de 2, 3 e 4 fotos com respiro e versões para fotos horizontais (2 e 3 paisagens empilhadas, escalonadas, com rodapé livre ou com destaque). |
 | **Assimétricos** | Posições desencontradas sem sobreposição: escada, revista, zigue-zague, mosaico solto, sangrado lateral/topo, e oito layouts medidos a partir de templates de referência (fotos grandes, margens generosas, algumas sangrando pela borda). |
 | **Sobrepostos** | Fotos se cruzando, separadas por um `contorno` na cor de fundo (recorte de revista). |
 
@@ -105,7 +105,7 @@ exatamente o que sai no arquivo.
 2. **Aba Formato** — troque entre Instagram/Facebook e Feed/Stories/Reels: as proporções
    mudam junto e a colagem se reajusta na hora. No feed do Instagram aparece o aviso do
    recorte 3:4 do grid. A cor de fundo (branco/preto) também mora aqui.
-3. **Aba Layout** — filtre por quantidade de fotos e escolha entre os 55 layouts. Trocar de
+3. **Aba Layout** — filtre por quantidade de fotos e escolha entre os 63 layouts. Trocar de
    layout **mantém as fotos já posicionadas**, na ordem, e vale só para a lâmina em edição.
 4. **Montagem** — arraste miniaturas da bandeja para os slots, ou clique numa miniatura para
    pôr no slot selecionado. Já dentro da colagem, o arrasto de uma foto faz duas coisas

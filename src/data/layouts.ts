@@ -4,6 +4,8 @@ import { PROPORCOES_VERTICAIS } from './formatos'
 const TODAS: Orientacao[] = ['vertical', 'quadrado', 'paisagem']
 const ALTAS: Orientacao[] = ['vertical', 'quadrado']
 const DEITADAS: Orientacao[] = ['paisagem', 'quadrado']
+const EM_PE: Orientacao[] = ['vertical']
+const PAISAGEM: Orientacao[] = ['paisagem']
 
 function slot(id: string, x: number, y: number, w: number, h: number): SlotLayout {
   return { id, x, y, w, h }
@@ -212,6 +214,77 @@ export const CATALOGO: Record<string, Layout> = {
     slot('s2', 0.37, 0.36, 0.26, 0.24),
     slot('s3', 0.66, 0.36, 0.26, 0.24),
   ]),
+  // Fotos horizontais com respiro: espaços deitados, para paisagens e fotos de câmera (3:2)
+  // entrarem quase sem corte (alvo ~1,5–1,8 de largura/altura no 3:4). Empilhadas só em pé;
+  // o quadrado tem versão própria — senão as fotos viram faixas panorâmicas.
+  'moldura-duas-paisagens': montar(
+    'moldura-duas-paisagens',
+    '2 paisagens — empilhadas com respiro',
+    'moldura',
+    EM_PE,
+    [slot('s1', 0.1, 0.1, 0.8, 0.36), slot('s2', 0.1, 0.54, 0.8, 0.36)],
+  ),
+  'moldura-duas-paisagens-quadrado': montar(
+    'moldura-duas-paisagens-quadrado',
+    '2 paisagens — empilhadas no quadrado',
+    'moldura',
+    ['quadrado'],
+    [slot('s1', 0.18, 0.07, 0.64, 0.41), slot('s2', 0.18, 0.52, 0.64, 0.41)],
+  ),
+  'moldura-duas-paisagens-rodape': montar(
+    'moldura-duas-paisagens-rodape',
+    '2 paisagens — com rodapé livre',
+    'moldura',
+    EM_PE,
+    [slot('s1', 0.08, 0.06, 0.84, 0.34), slot('s2', 0.08, 0.43, 0.84, 0.34)],
+  ),
+  'moldura-duas-paisagens-escalonadas': montar(
+    'moldura-duas-paisagens-escalonadas',
+    '2 paisagens — escalonadas',
+    'moldura',
+    EM_PE,
+    [slot('s1', 0.06, 0.12, 0.72, 0.34), slot('s2', 0.22, 0.54, 0.72, 0.34)],
+  ),
+  'moldura-duas-paisagens-lado': montar(
+    'moldura-duas-paisagens-lado',
+    '2 paisagens — lado a lado com respiro',
+    'moldura',
+    PAISAGEM,
+    [slot('s1', 0.06, 0.18, 0.42, 0.64), slot('s2', 0.52, 0.18, 0.42, 0.64)],
+  ),
+  'moldura-tres-paisagens': montar(
+    'moldura-tres-paisagens',
+    '3 paisagens — empilhadas com respiro',
+    'moldura',
+    EM_PE,
+    [
+      slot('s1', 0.19, 0.06, 0.62, 0.28),
+      slot('s2', 0.19, 0.36, 0.62, 0.28),
+      slot('s3', 0.19, 0.66, 0.62, 0.28),
+    ],
+  ),
+  'moldura-tres-paisagens-rodape': montar(
+    'moldura-tres-paisagens-rodape',
+    '3 paisagens — com rodapé livre',
+    'moldura',
+    EM_PE,
+    [
+      slot('s1', 0.2, 0.04, 0.6, 0.25),
+      slot('s2', 0.2, 0.3, 0.6, 0.25),
+      slot('s3', 0.2, 0.56, 0.6, 0.25),
+    ],
+  ),
+  'moldura-tres-paisagem-destaque': montar(
+    'moldura-tres-paisagem-destaque',
+    '3 fotos — paisagem em destaque',
+    'moldura',
+    ALTAS,
+    [
+      slot('s1', 0.08, 0.08, 0.84, 0.42),
+      slot('s2', 0.08, 0.56, 0.41, 0.26),
+      slot('s3', 0.51, 0.56, 0.41, 0.26),
+    ],
+  ),
   'moldura-mosaico-legenda': montar(
     'moldura-mosaico-legenda',
     '4 fotos — mosaico com legenda',
