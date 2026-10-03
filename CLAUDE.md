@@ -60,6 +60,7 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
+| `src/lib/sugerirLayouts.ts` | Sugestão de layouts pela proporção das fotos (pareamento foto↔slot e % visível no cover) |
 | `src/lib/dataCaptura.ts` | Data em que a foto foi tirada (EXIF de JPEG/WebP, parser próprio, sem rede); sem EXIF, data do arquivo |
 | `src/lib/layoutEfetivo.ts` | Aplica gap e margem do usuário sobre o layout do catálogo |
 | `src/lib/useMedidas.ts` | Mede um elemento (ResizeObserver) — a colagem não tem tamanho fixo |
@@ -194,6 +195,20 @@ nada é `null`. É isso que permite a tela única funcionar sem gating.
   (recomeço do zero, descarta o histórico).
 - O filete (`linhaInterna`) é **branco e desenhado por cima de tudo**: num
   layout novo, ele precisa cair sobre a foto, senão some no fundo branco.
+
+### Sugestão de layouts
+
+- Topo da aba Layout: "Sugeridos para suas fotos". As fotos-base são as **da lâmina
+  ativa**; senão as **não usadas**; senão todas (ordem da bandeja, no máximo 9).
+- Nota de um par foto↔slot = fração da foto que aparece no cover:
+  `min(p, s) / max(p, s)` (p, s = largura/altura em px do formato). O pareamento
+  ordena fotos e slots pela proporção e casa por programação dinâmica — também
+  escolhe quem fica de fora quando sobra foto ou slot. Sem layout com o mesmo
+  número de fotos (ex.: 5), usa os tamanhos vizinhos e avisa "espaço vazio" /
+  "foto de fora".
+- Escolher uma sugestão chama `aplicarSugestao`: troca o layout **e** põe cada
+  foto no slot casado, num passo só de desfazer (o `definirLayout` comum só
+  migra as fotos na ordem).
 
 ## Como verificar
 

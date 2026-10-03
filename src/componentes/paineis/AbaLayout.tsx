@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { Sparkles } from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId } from '../../data/formatos'
 import { DESCRICAO_ESTILO, layoutsAgrupados, ROTULO_ESTILO } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
+import { sugerirLayouts } from '../../lib/sugerirLayouts'
 import { PreviewLayout } from '../PreviewLayout'
 import { CartaoOpcao } from '../ui/CartaoOpcao'
+import { Badge } from '@/components/ui/badge'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 const LARGURA_PREVIEW = 100
@@ -18,10 +21,39 @@ export function AbaLayout() {
   const lamina = useColagemStore(laminaAtiva)
   const corFundo = useColagemStore((s) => s.corFundo)
   const definirLayout = useColagemStore((s) => s.definirLayout)
+  const aplicarSugestao = useColagemStore((s) => s.aplicarSugestao)
+  const imagens = useColagemStore((s) => s.imagens)
+  const laminas = useColagemStore((s) => s.laminas)
 
   const { layoutId, gap, margem } = lamina
 
   const [filtro, setFiltro] = useState<Filtro>(null)
+
+  // Fotos que guiam a sugestão: as da lâmina em edição; senão as ainda não
+  // usadas em nenhuma lâmina; senão todas — sempre na ordem da bandeja.
+  const { fotosBase, origem } = useMemo(() => {
+    const naLamina = new Set(lamina.slots.map((x) => x.imagemId).filter(Boolean))
+    const daLamina = imagens.filter((i) => naLamina.has(i.id))
+    if (daLamina.length) return { fotosBase: daLamina, origem: 'desta lâmina' }
+    const usadas = new Set(laminas.flatMap((l) => l.slots.map((x) => x.imagemId)).filter(Boolean))
+    const livres = imagens.filter((i) => !usadas.has(i.id))
+    if (livres.length) return { fotosBase: livres, origem: 'ainda não usadas' }
+    return { fotosBase: imagens, origem: 'da bandeja' }
+  }, [imagens, laminas, lamina])
+
+  const formatoAtual = formatoPorId(formatoId)
+  const sugestoes = useMemo(
+    () =>
+      formatoAtual
+        ? sugerirLayouts(
+            layoutsAgrupados(formatoAtual.proporcao).flatMap((g) => g.layouts),
+            fotosBase,
+            formatoAtual.largura,
+            formatoAtual.altura,
+          )
+        : [],
+    [formatoAtual, fotosBase],
+  )
 
   const formato = formatoPorId(formatoId)
   if (!formato) return null
@@ -64,6 +96,65 @@ export function AbaLayout() {
           mantém as fotos já posicionadas.
         </p>
       </div>
+
+      {sugestoes.length > 0 && (
+        <section className="rounded-xl border border-primary/25 bg-primary/5 p-3">
+          <h3 className="flex items-center gap-1.5 text-sm font-medium">
+            <Sparkles className="size-3.5 text-primary" /> Sugeridos para suas fotos
+          </h3>
+          <p className="mt-0.5 mb-2.5 text-xs leading-snug text-muted-foreground">
+            Pela proporção {fotosBase.length === 1 ? 'da foto' : 'das fotos'} {origem}
+            {fotosBase.length > 9 ? ' (as 9 primeiras)' : ''}. Ao escolher, cada foto vai para o
+            espaço que melhor combina com ela.
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {sugestoes.map((sug) => {
+              const l = sug.layout
+              const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
+              const alturaBase = (LARGURA_PREVIEW * formato.altura) / formato.largura
+              const escala = Math.min(1, ALTURA_MAX_PREVIEW / alturaBase)
+              const pct = Math.round(sug.aproveitamento * 100)
+              const aviso = sug.slotsVazios
+                ? `${sug.slotsVazios} ${sug.slotsVazios === 1 ? 'espaço vazio' : 'espaços vazios'}`
+                : sug.fotosDeFora
+                  ? `${sug.fotosDeFora} ${sug.fotosDeFora === 1 ? 'foto fica' : 'fotos ficam'} de fora`
+                  : ''
+
+              return (
+                <CartaoOpcao
+                  key={l.id}
+                  ativo={layoutId === l.id}
+                  onClick={() => aplicarSugestao(l.id, sug.atribuicoes)}
+                  title={`${l.nome} — ${pct}% de cada foto aparece, em média${aviso ? ` · ${aviso}` : ''}`}
+                  className="relative gap-1.5"
+                >
+                  <Badge
+                    variant={pct >= 90 ? 'default' : 'secondary'}
+                    className="absolute top-1.5 right-1.5 z-10 h-4 px-1.5 text-[10px] tabular-nums"
+                  >
+                    {pct}%
+                  </Badge>
+                  <span
+                    className="flex items-center justify-center"
+                    style={{ height: ALTURA_MAX_PREVIEW }}
+                  >
+                    <PreviewLayout
+                      layout={efetivo}
+                      largura={Math.round(LARGURA_PREVIEW * escala)}
+                      altura={Math.round(alturaBase * escala)}
+                      corFundo={corFundo}
+                    />
+                  </span>
+                  <span className="text-center text-[11px] leading-tight text-muted-foreground">
+                    {l.nome}
+                    {aviso && <span className="block text-[10px]">{aviso}</span>}
+                  </span>
+                </CartaoOpcao>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {visiveis.map(({ estilo, layouts }) => (
         <section key={estilo}>
