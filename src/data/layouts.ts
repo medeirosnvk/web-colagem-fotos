@@ -3,6 +3,7 @@ import { PROPORCOES_VERTICAIS } from './formatos'
 
 const TODAS: Orientacao[] = ['vertical', 'quadrado', 'paisagem']
 const ALTAS: Orientacao[] = ['vertical', 'quadrado']
+const DEITADAS: Orientacao[] = ['paisagem', 'quadrado']
 
 function slot(id: string, x: number, y: number, w: number, h: number): SlotLayout {
   return { id, x, y, w, h }
@@ -172,6 +173,56 @@ export const CATALOGO: Record<string, Layout> = {
     TODAS,
     [slot('s1', 0, 0, 1, 1)],
     { linhaInterna: { inset: 90, largura: 6 } },
+  ),
+  // O filete é branco e desenhado por cima de tudo: precisa cair sobre a foto.
+  'moldura-passe-partout': montar(
+    'moldura-passe-partout',
+    'Passe-partout — margem e filete na foto',
+    'moldura',
+    ALTAS,
+    [slot('s1', 0.1, 0.08, 0.8, 0.84)],
+    { linhaInterna: { inset: 170, largura: 3 } },
+  ),
+  'moldura-topo-rodape': montar(
+    'moldura-topo-rodape',
+    'Foto no topo — rodapé livre',
+    'moldura',
+    ALTAS,
+    [slot('s1', 0, 0, 1, 0.62)],
+  ),
+  'moldura-lateral-texto': montar(
+    'moldura-lateral-texto',
+    'Foto à direita — texto ao lado',
+    'moldura',
+    TODAS,
+    [slot('s1', 0.44, 0.1, 0.48, 0.8)],
+  ),
+  'moldura-larga': montar('moldura-larga', 'Moldura larga — panorama', 'moldura', DEITADAS, [
+    slot('s1', 0.14, 0.16, 0.72, 0.6),
+  ]),
+  'moldura-dupla-legenda': montar(
+    'moldura-dupla-legenda',
+    '2 fotos — dupla com legenda',
+    'moldura',
+    TODAS,
+    [slot('s1', 0.1, 0.16, 0.38, 0.5), slot('s2', 0.52, 0.16, 0.38, 0.5)],
+  ),
+  'moldura-trio-faixa': montar('moldura-trio-faixa', '3 fotos — trio em faixa', 'moldura', ALTAS, [
+    slot('s1', 0.08, 0.36, 0.26, 0.24),
+    slot('s2', 0.37, 0.36, 0.26, 0.24),
+    slot('s3', 0.66, 0.36, 0.26, 0.24),
+  ]),
+  'moldura-mosaico-legenda': montar(
+    'moldura-mosaico-legenda',
+    '4 fotos — mosaico com legenda',
+    'moldura',
+    TODAS,
+    [
+      slot('s1', 0.12, 0.08, 0.36, 0.33),
+      slot('s2', 0.52, 0.08, 0.36, 0.33),
+      slot('s3', 0.12, 0.45, 0.36, 0.33),
+      slot('s4', 0.52, 0.45, 0.36, 0.33),
+    ],
   ),
 
   // ------------------------------------------------------------------

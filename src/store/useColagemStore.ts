@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { CorFundo, Destino, EstadoSlot, Imagem, Lamina, Plataforma } from '../tipos'
+import type { CorFundo, Destino, EstadoSlot, Imagem, Lamina, OrdemFotos, Plataforma } from '../tipos'
 import { formatoPorId, formatosDe } from '../data/formatos'
 import { layoutPorId, layoutsDe } from '../data/layouts'
 import { clamp } from '../lib/cover'
@@ -26,6 +26,8 @@ interface Documento {
   formatoId: string
   laminas: Lamina[]
   permitirReduzir: boolean
+  /** Ordem da bandeja; também é a ordem usada pelo preenchimento automático. */
+  ordemFotos: OrdemFotos
 }
 
 interface EstadoColagem extends Documento {
@@ -39,6 +41,9 @@ interface EstadoColagem extends Documento {
 
   adicionarImagens: (imagens: Imagem[]) => void
   removerImagem: (id: string) => void
+  /** Tira todas as fotos da bandeja e dos slots; lâminas, layouts e formato ficam. Desfazível. */
+  removerTodasImagens: () => void
+  ordenarImagens: (ordem: OrdemFotos) => void
   limparTudo: () => void
 
   definirPlataforma: (plataforma: Plataforma) => void
@@ -64,6 +69,14 @@ interface EstadoColagem extends Documento {
   preencherAutomaticamente: () => void
   esvaziarLamina: (id?: string) => void
   alternarPermitirReduzir: () => void
+}
+
+/** Ordena a bandeja. Empates (mesma data) mantêm a ordem de adição. */
+function ordenar(imagens: Imagem[], ordem: OrdemFotos): Imagem[] {
+  const copia = [...imagens]
+  if (ordem === 'adicao') return copia.sort((a, b) => a.sequencia - b.sequencia)
+  const sinal = ordem === 'data-antigas' ? 1 : -1
+  return copia.sort((a, b) => sinal * (a.dataCaptura - b.dataCaptura) || a.sequencia - b.sequencia)
 }
 
 /** A lâmina em edição. Selector: componentes que a usam re-renderizam ao trocar. */
@@ -100,6 +113,7 @@ function documento(s: EstadoColagem): Documento {
     formatoId: s.formatoId,
     laminas: s.laminas,
     permitirReduzir: s.permitirReduzir,
+    ordemFotos: s.ordemFotos,
   }
 }
 
@@ -187,6 +201,7 @@ function documentoInicial(): Documento {
     formatoId: formato.id,
     laminas: [novaLamina(layout.id)],
     permitirReduzir: false,
+    ordemFotos: 'adicao',
   }
 }
 
@@ -269,7 +284,9 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
 
     adicionarImagens: (novas) => {
       novas.forEach((i) => registro.set(i.id, i))
-      editar((s) => (novas.length === 0 ? null : { imagens: [...s.imagens, ...novas] }))
+      editar((s) =>
+        novas.length === 0 ? null : { imagens: ordenar([...s.imagens, ...novas], s.ordemFotos) },
+      )
     },
 
     removerImagem: (id) =>
@@ -283,6 +300,31 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
           ),
         })),
       })),
+
+    removerTodasImagens: () =>
+      editar((s) =>
+        s.imagens.length === 0
+          ? null
+          : {
+              imagens: [],
+              laminas: s.laminas.map((l) => ({
+                ...l,
+                slots: l.slots.map((slot) => ({
+                  slotId: slot.slotId,
+                  escala: 1,
+                  offsetX: 0,
+                  offsetY: 0,
+                })),
+              })),
+            },
+      ),
+
+    ordenarImagens: (ordem) =>
+      editar((s) =>
+        s.ordemFotos === ordem && s.imagens.length < 2
+          ? null
+          : { ordemFotos: ordem, imagens: ordenar(s.imagens, ordem) },
+      ),
 
     /** Recomeço do zero: descarta o histórico, então as imagens somem de vez. */
     limparTudo: () => {

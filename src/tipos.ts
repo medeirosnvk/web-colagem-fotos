@@ -65,7 +65,15 @@ export interface Imagem {
   largura: number
   altura: number
   el: HTMLImageElement
+  /** Ordem em que entrou na bandeja (para voltar à "ordem de adição"). */
+  sequencia: number
+  /** Quando a foto foi tirada (EXIF), ou a data do arquivo se não houver EXIF. Epoch ms. */
+  dataCaptura: number
+  dataOrigem: 'exif' | 'arquivo'
 }
+
+/** Como a bandeja de fotos é ordenada. */
+export type OrdemFotos = 'adicao' | 'data-antigas' | 'data-recentes'
 
 /** Estado de preenchimento de um slot. */
 export interface EstadoSlot {

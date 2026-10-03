@@ -1,13 +1,25 @@
 import { useCallback, useState } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { useDropzone } from 'react-dropzone'
-import { ImagePlus, Images, Loader2, ShieldCheck, X } from 'lucide-react'
+import { ArrowDownUp, ImagePlus, Images, Loader2, ShieldCheck, Trash2, X } from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
 import { FAIXA } from './ui/faixa'
+import { BotaoIcone } from './ui/BotaoIcone'
 import { carregarImagens, TIPOS_ACEITOS } from '../lib/carregarImagens'
-import type { Imagem } from '../tipos'
+import type { Imagem, OrdemFotos } from '../tipos'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 
 function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
@@ -34,7 +46,7 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
         alt={imagem.nome}
         draggable={false}
         onClick={() => usarImagem(imagem.id)}
-        title="Clique para pôr no slot selecionado · ou arraste até um slot"
+        title={`${imagem.nome} · ${rotuloData(imagem)}\nClique para pôr no slot selecionado · ou arraste até um slot`}
         className="h-full w-full cursor-grab object-cover active:cursor-grabbing"
       />
       {usada && (
@@ -54,6 +66,78 @@ function Miniatura({ imagem, usada }: { imagem: Imagem; usada: boolean }) {
       <span className="pointer-events-none absolute inset-x-0 bottom-0 truncate bg-gradient-to-t from-black/80 to-transparent px-1.5 pt-4 pb-1 text-[10px] text-white tabular-nums">
         {imagem.largura}×{imagem.altura}
       </span>
+    </div>
+  )
+}
+
+const ROTULO_ORDEM: Record<OrdemFotos, string> = {
+  adicao: 'Ordem de adição',
+  'data-antigas': 'Mais antigas primeiro',
+  'data-recentes': 'Mais recentes primeiro',
+}
+
+function rotuloData(imagem: Imagem): string {
+  const data = new Date(imagem.dataCaptura).toLocaleString('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  })
+  return imagem.dataOrigem === 'exif' ? `tirada em ${data}` : `arquivo de ${data} (sem data da câmera)`
+}
+
+/** Ordenação da bandeja e "Limpar" — só aparecem quando há fotos. */
+function BarraFotos() {
+  const qtd = useColagemStore((s) => s.imagens.length)
+  const ordem = useColagemStore((s) => s.ordemFotos)
+  const ordenarImagens = useColagemStore((s) => s.ordenarImagens)
+  const removerTodasImagens = useColagemStore((s) => s.removerTodasImagens)
+  const [confirmar, setConfirmar] = useState(false)
+
+  if (qtd === 0) return null
+  return (
+    <div className="flex items-center gap-1.5 px-3 pt-3">
+      <Select value={ordem} onValueChange={(v) => ordenarImagens(v as OrdemFotos)}>
+        <SelectTrigger
+          size="sm"
+          aria-label="Ordenar fotos"
+          title="Ordenar pela data em que a foto foi tirada"
+          className="min-w-0 flex-1 text-xs"
+        >
+          <ArrowDownUp />
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {(Object.keys(ROTULO_ORDEM) as OrdemFotos[]).map((o) => (
+            <SelectItem key={o} value={o} className="text-xs">
+              {ROTULO_ORDEM[o]}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <BotaoIcone
+        dica="Remover todas as fotos"
+        onClick={() => setConfirmar(true)}
+        className="text-muted-foreground hover:text-destructive"
+      >
+        <Trash2 />
+      </BotaoIcone>
+
+      <AlertDialog open={confirmar} onOpenChange={setConfirmar}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover todas as fotos?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {qtd === 1 ? 'A foto sai' : `As ${qtd} fotos saem`} da bandeja e de todas as lâminas.
+              Lâminas, layouts e formato continuam. Dá para desfazer com Ctrl+Z.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={removerTodasImagens}>
+              Remover fotos
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
@@ -120,6 +204,8 @@ export function ConteudoFotos({ colunas = 'grid-cols-2' }: { colunas?: string })
           )}
         </Button>
       </div>
+
+      <BarraFotos />
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {imagens.length === 0 ? (

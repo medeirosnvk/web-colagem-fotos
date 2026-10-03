@@ -60,6 +60,7 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/cover.ts` | Geometria compartilhada (retângulo do slot e da imagem) |
 | `src/lib/exportarColagem.ts` | Render no canvas, downscale com pica, PNG/JPG, download |
 | `src/lib/carregarImagens.ts` | Leitura local dos arquivos e dimensões naturais |
+| `src/lib/dataCaptura.ts` | Data em que a foto foi tirada (EXIF de JPEG/WebP, parser próprio, sem rede); sem EXIF, data do arquivo |
 | `src/lib/layoutEfetivo.ts` | Aplica gap e margem do usuário sobre o layout do catálogo |
 | `src/lib/useMedidas.ts` | Mede um elemento (ResizeObserver) — a colagem não tem tamanho fixo |
 | `src/lib/useCompacto.ts` | Detecta tela estreita: abaixo de 1024 px o layout muda de estrutura |
@@ -177,6 +178,22 @@ Duas coisas exigem cuidado ao mexer nisso:
 
 O estado inicial já vem com plataforma, destino, formato e layout válidos —
 nada é `null`. É isso que permite a tela única funcionar sem gating.
+
+### Bandeja de fotos: ordem e limpar
+
+- A ordem da bandeja (`ordemFotos`: adição, mais antigas, mais recentes) é **do
+  documento** — entra no desfazer e é aplicada também às fotos que chegam depois
+  (`adicionarImagens` reordena). Como `preencherAutomaticamente` percorre
+  `imagens` em ordem, ordenar por data faz o preenchimento seguir a cronologia.
+- A data vem de `lerDataCaptura` (DateTimeOriginal → DateTimeDigitized →
+  DateTime). Fotos sem EXIF usam `file.lastModified` e são marcadas
+  `dataOrigem: 'arquivo'` (o tooltip da miniatura avisa). `sequencia` guarda a
+  ordem de adição e é capturada **antes** de qualquer `await`.
+- `removerTodasImagens` tira as fotos da bandeja e de todos os slots, mas mantém
+  lâminas, layouts e formato — e é desfazível. Não confundir com `limparTudo`
+  (recomeço do zero, descarta o histórico).
+- O filete (`linhaInterna`) é **branco e desenhado por cima de tudo**: num
+  layout novo, ele precisa cair sobre a foto, senão some no fundo branco.
 
 ## Como verificar
 
