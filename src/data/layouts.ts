@@ -563,6 +563,46 @@ export const CATALOGO: Record<string, Layout> = {
     { contorno: 14 },
   ),
 
+  'c2-faixas': continuo(
+    'c2-faixas',
+    '2 posts — três faixas',
+    2,
+    [
+      [0, 0, 0.7, 1],
+      [0.7, 0, 0.6, 1],
+      [1.3, 0, 0.7, 1],
+    ],
+    { gap: 12 },
+  ),
+  'c2-tijolos': continuo(
+    'c2-tijolos',
+    '2 posts — tijolos',
+    2,
+    [
+      [0, 0, 1.4, 0.55],
+      [1.4, 0, 0.6, 0.55],
+      [0, 0.55, 0.6, 0.45],
+      [0.6, 0.55, 1.4, 0.45],
+    ],
+    { gap: 12 },
+  ),
+  'c2-mosaico': continuo(
+    'c2-mosaico',
+    '2 posts — mosaico',
+    2,
+    [
+      [0, 0, 0.6, 0.5],
+      [0, 0.5, 0.6, 0.5],
+      [0.6, 0, 0.8, 1],
+      [1.4, 0, 0.6, 0.5],
+      [1.4, 0.5, 0.6, 0.5],
+    ],
+    { gap: 12 },
+  ),
+  'c2-moldura': continuo('c2-moldura', '2 posts — panorâmica com moldura', 2, [
+    [0.15, 0.15, 1.7, 0.7],
+  ]),
+
   'c3-panoramica': continuo('c3-panoramica', '3 posts — panorâmica', 3, [[0, 0, 3, 1]]),
   'c3-ponte': continuo('c3-ponte', '3 posts — fotos nas divisas', 3, [
     [0, 0, 1.3, 1],
@@ -594,12 +634,140 @@ export const CATALOGO: Record<string, Layout> = {
     { contorno: 14 },
   ),
 
+  'c3-moldura': continuo('c3-moldura', '3 posts — panorâmica com moldura', 3, [
+    [0.12, 0.15, 2.76, 0.7],
+  ]),
+  'c3-faixas': continuo(
+    'c3-faixas',
+    '3 posts — quatro faixas',
+    3,
+    [
+      [0, 0, 0.75, 1],
+      [0.75, 0, 0.75, 1],
+      [1.5, 0, 0.75, 1],
+      [2.25, 0, 0.75, 1],
+    ],
+    { gap: 12 },
+  ),
+  'c3-tijolos': continuo(
+    'c3-tijolos',
+    '3 posts — tijolos',
+    3,
+    [
+      [0, 0, 0.8, 0.5],
+      [0.8, 0, 1.4, 0.5],
+      [2.2, 0, 0.8, 0.5],
+      [0, 0.5, 1.4, 0.5],
+      [1.4, 0.5, 1.6, 0.5],
+    ],
+    { gap: 12 },
+  ),
+  'c3-galeria': continuo('c3-galeria', '3 posts — galeria', 3, [
+    [0.1, 0.1, 0.8, 0.8],
+    [0.95, 0.3, 0.6, 0.4],
+    [1.65, 0.12, 0.7, 0.76],
+    [2.45, 0.3, 0.45, 0.4],
+  ]),
+
   'c4-panoramica': continuo('c4-panoramica', '4 posts — panorâmica', 4, [[0, 0, 4, 1]]),
   'c4-ritmo': continuo('c4-ritmo', '4 posts — ritmo', 4, [
     [0, 0, 1.3, 1],
     [1.4, 0.15, 0.75, 0.7],
     [2.27, 0, 1, 1],
     [3.4, 0.2, 0.6, 0.6],
+  ]),
+  'c4-tijolos': continuo(
+    'c4-tijolos',
+    '4 posts — tijolos',
+    4,
+    [
+      [0, 0, 1.3, 0.5],
+      [1.3, 0, 1.4, 0.5],
+      [2.7, 0, 1.3, 0.5],
+      [0, 0.5, 0.7, 0.5],
+      [0.7, 0.5, 1.3, 0.5],
+      [2, 0.5, 1.3, 0.5],
+      [3.3, 0.5, 0.7, 0.5],
+    ],
+    { gap: 12 },
+  ),
+  'c4-respiro': continuo('c4-respiro', '4 posts — com respiro', 4, [
+    [0.1, 0.12, 1.2, 0.76],
+    [1.45, 0.24, 0.8, 0.52],
+    [2.4, 0.12, 0.75, 0.76],
+    [3.3, 0.3, 0.6, 0.4],
+  ]),
+  'c4-sobreposta': continuo(
+    'c4-sobreposta',
+    '4 posts — sobrepostas',
+    4,
+    [
+      [0, 0, 1.4, 1],
+      [1.6, 0, 1.1, 1],
+      [2.9, 0, 1.1, 1],
+      [1.15, 0.2, 0.65, 0.5],
+      [2.5, 0.45, 0.6, 0.45],
+    ],
+    { contorno: 14 },
+  ),
+
+  'c5-panoramica': continuo('c5-panoramica', '5 posts — panorâmica', 5, [[0, 0, 5, 1]]),
+  'c5-ponte': continuo('c5-ponte', '5 posts — fotos nas divisas', 5, [
+    [0, 0, 1.3, 1],
+    [1.42, 0.16, 0.76, 0.68],
+    [2.3, 0, 1.1, 1],
+    [3.52, 0.16, 0.76, 0.68],
+    [4.4, 0, 0.6, 1],
+  ]),
+  'c5-editorial': continuo('c5-editorial', '5 posts — editorial', 5, [
+    [0, 0, 1.25, 1],
+    [1.35, 0.12, 0.8, 0.45],
+    [1.55, 0.62, 0.55, 0.3],
+    [2.3, 0.2, 0.6, 0.6],
+    [3, 0, 1.15, 1],
+    [4.25, 0.15, 0.65, 0.7],
+  ]),
+
+  'c6-panoramica': continuo('c6-panoramica', '6 posts — panorâmica', 6, [[0, 0, 6, 1]]),
+  'c6-ponte': continuo('c6-ponte', '6 posts — fotos nas divisas', 6, [
+    [0, 0, 1.3, 1],
+    [1.42, 0.16, 0.76, 0.68],
+    [2.3, 0, 1.4, 1],
+    [3.82, 0.16, 0.76, 0.68],
+    [4.7, 0, 1.3, 1],
+  ]),
+  'c6-respiro': continuo('c6-respiro', '6 posts — com respiro', 6, [
+    [0.1, 0.12, 1.2, 0.76],
+    [1.45, 0.24, 0.8, 0.52],
+    [2.4, 0.12, 1.2, 0.76],
+    [3.75, 0.24, 0.8, 0.52],
+    [4.7, 0.12, 1.2, 0.76],
+  ]),
+  'c6-tijolos': continuo(
+    'c6-tijolos',
+    '6 posts — tijolos',
+    6,
+    [
+      [0, 0, 1.5, 0.5],
+      [1.5, 0, 1.5, 0.5],
+      [3, 0, 1.5, 0.5],
+      [4.5, 0, 1.5, 0.5],
+      [0, 0.5, 0.75, 0.5],
+      [0.75, 0.5, 1.5, 0.5],
+      [2.25, 0.5, 1.5, 0.5],
+      [3.75, 0.5, 1.5, 0.5],
+      [5.25, 0.5, 0.75, 0.5],
+    ],
+    { gap: 12 },
+  ),
+  'c6-editorial': continuo('c6-editorial', '6 posts — editorial', 6, [
+    [0, 0, 1.25, 1],
+    [1.35, 0.12, 0.8, 0.45],
+    [1.55, 0.62, 0.55, 0.3],
+    [2.3, 0.2, 0.6, 0.6],
+    [3, 0, 1.15, 1],
+    [4.25, 0.15, 0.9, 0.7],
+    [5.3, 0, 0.7, 1],
   ]),
 }
 
@@ -712,6 +880,8 @@ export function layoutsAgrupados(
       const ordem = ordemGrades(orientacao)
       layouts.sort((a, b) => ordem.indexOf(a.id) - ordem.indexOf(b.id))
     }
+    // Contínuos: por quantidade de posts (o sort é estável, mantém a ordem do catálogo).
+    if (estilo === 'continuo') layouts.sort((a, b) => (a.quadros ?? 1) - (b.quadros ?? 1))
     return { estilo, layouts }
   }).filter((g) => g.layouts.length > 0)
 }

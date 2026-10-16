@@ -100,7 +100,7 @@ Consequências ao mexer aqui:
 
 ### Carrossel contínuo (lâminas de vários posts)
 
-- Um layout com `quadros: N` (estilo `continuo`, só feed 3:4, 4:5 e 1:1) faz a lâmina
+- Um layout com `quadros: N` (estilo `continuo`, 2 a 6 posts, só feed 3:4, 4:5 e 1:1; na aba Layout, agrupados por posts) faz a lâmina
   ocupar **N posts** lado a lado. Os slots continuam em 0..1, mas da largura **total**
   (N × largura do formato) — é isso que deixa uma foto atravessar a divisa. No catálogo,
   `continuo()` recebe as posições em unidades de post (x de 0..N) e converte.

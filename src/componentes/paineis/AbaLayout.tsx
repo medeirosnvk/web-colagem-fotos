@@ -185,38 +185,54 @@ export function AbaLayout() {
             {DESCRICAO_ESTILO[estilo]}
           </p>
 
-          <div className="grid grid-cols-2 gap-2">
-            {layouts.map((l) => {
-              // O preview do layout escolhido acompanha os sliders de espaçamento.
-              const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
-              const m = medidaPreview(l, formato)
+          {/* Contínuos: subgrupos por quantidade de posts — são muitos, e é a 1ª escolha. */}
+          {(estilo === 'continuo'
+            ? [...new Set(layouts.map(quadrosDe))].map((q) => ({
+                rotulo: `${q} posts`,
+                layouts: layouts.filter((l) => quadrosDe(l) === q),
+              }))
+            : [{ rotulo: null, layouts }]
+          ).map((bloco) => (
+            <div key={bloco.rotulo ?? estilo} className="mb-3 last:mb-0">
+              {bloco.rotulo && (
+                <p className="mb-1.5 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                  {bloco.rotulo}
+                </p>
+              )}
+              <div className="grid grid-cols-2 gap-2">
+                {bloco.layouts.map((l) => {
+                  // O preview do layout escolhido acompanha os sliders de espaçamento.
+                  const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
+                  const m = medidaPreview(l, formato)
 
-              return (
-                <CartaoOpcao
-                  key={l.id}
-                  ativo={layoutId === l.id}
-                  onClick={() => definirLayout(l.id)}
-                  title={l.nome}
-                  className={`gap-1.5 ${m.largo ? 'col-span-2' : ''}`}
-                >
-                  <span
-                    className="flex items-center justify-center"
-                    style={{ height: m.alturaCaixa }}
-                  >
-                    <PreviewLayout
-                      layout={efetivo}
-                      largura={m.largura}
-                      altura={m.altura}
-                      corFundo={corFundo}
-                    />
-                  </span>
-                  <span className="text-center text-[11px] leading-tight text-muted-foreground">
-                    {l.nome}
-                  </span>
-                </CartaoOpcao>
-              )
-            })}
-          </div>
+                  return (
+                    <CartaoOpcao
+                      key={l.id}
+                      ativo={layoutId === l.id}
+                      onClick={() => definirLayout(l.id)}
+                      title={l.nome}
+                      className={`gap-1.5 ${m.largo ? 'col-span-2' : ''}`}
+                    >
+                      <span
+                        className="flex items-center justify-center"
+                        style={{ height: m.alturaCaixa }}
+                      >
+                        <PreviewLayout
+                          layout={efetivo}
+                          largura={m.largura}
+                          altura={m.altura}
+                          corFundo={corFundo}
+                        />
+                      </span>
+                      <span className="text-center text-[11px] leading-tight text-muted-foreground">
+                        {l.nome}
+                      </span>
+                    </CartaoOpcao>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </section>
       ))}
     </div>
