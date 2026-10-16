@@ -25,7 +25,7 @@ export interface SlotLayout {
   h: number
 }
 
-export type EstiloLayout = 'grade' | 'moldura' | 'livre' | 'sobreposto'
+export type EstiloLayout = 'grade' | 'moldura' | 'livre' | 'sobreposto' | 'continuo'
 
 export type Orientacao = 'vertical' | 'quadrado' | 'paisagem'
 
@@ -49,6 +49,13 @@ export interface Layout {
    */
   proporcoes?: ProporcaoId[]
   qtdFotos: number
+  /**
+   * Quantos posts do carrossel a lâmina ocupa (ausente = 1). Num layout contínuo
+   * a tela tem `quadros` vezes a largura do formato, os slots usam x de 0..1 sobre
+   * essa largura toda — por isso uma foto pode atravessar a divisa entre posts — e
+   * a exportação corta o resultado em `quadros` arquivos do formato.
+   */
+  quadros?: number
   /** Espaçamento entre slots, em px na base de largura 1080. */
   gap: number
   /** Margem externa, em px na base de largura 1080. */

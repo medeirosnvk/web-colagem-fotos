@@ -3,7 +3,7 @@ import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId, ZONA_SEGURA_PX } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
-import { retanguloDoSlot } from '../../lib/cover'
+import { quadrosDe, retanguloDoSlot } from '../../lib/cover'
 import { SlotEditor } from './SlotEditor'
 import { centroVisivel } from '../../lib/areaVisivel'
 import type { Lamina } from '../../tipos'
@@ -16,6 +16,9 @@ import type { Lamina } from '../../tipos'
  * Sem `lamina`, desenha a que está em edição. Passando uma, desenha aquela —
  * é assim que o painel de lâminas mostra miniaturas de verdade, com a mesma
  * geometria da tela grande.
+ *
+ * Numa lâmina contínua a tela tem a largura de vários posts; as divisas entre
+ * eles são desenhadas por cima, só no DOM — o arquivo é cortado ali.
  */
 export function TelaColagem({
   larguraMax,
@@ -23,12 +26,15 @@ export function TelaColagem({
   interativo = true,
   mostrarZonaSegura = true,
   lamina,
+  rotularPosts = true,
 }: {
   larguraMax: number
   alturaMax: number
   interativo?: boolean
   mostrarZonaSegura?: boolean
   lamina?: Lamina
+  /** Escreve "post N" junto de cada divisa (desligado nas miniaturas). */
+  rotularPosts?: boolean
 }) {
   // Identidade desta instância: a mesma lâmina pode estar na tela grande e
   // na miniatura do painel ao mesmo tempo, e os ids do dnd-kit precisam diferir.
@@ -46,20 +52,22 @@ export function TelaColagem({
 
   const slots = alvo.slots
   const layout = layoutEfetivo(layoutBase, alvo.gap, alvo.margem)
-  const escala = Math.min(larguraMax / formato.largura, alturaMax / formato.altura)
+  const quadros = quadrosDe(layout)
+  const larguraTela = formato.largura * quadros
+  const escala = Math.min(larguraMax / larguraTela, alturaMax / formato.altura)
 
   const temZonaSegura =
     mostrarZonaSegura && (destinoWizard === 'stories' || destinoWizard === 'reels')
 
   const retangulos = layout.slots.map((s) =>
-    retanguloDoSlot(s, layout, formato.largura, formato.altura),
+    retanguloDoSlot(s, layout, larguraTela, formato.altura),
   )
 
   return (
     <div
       className="relative shadow-2xl shadow-black/60"
       style={{
-        width: formato.largura * escala,
+        width: larguraTela * escala,
         height: formato.altura * escala,
         backgroundColor: corFundo,
       }}
@@ -101,6 +109,28 @@ export function TelaColagem({
             borderWidth: layout.linhaInterna.largura * (formato.largura / 1080) * escala,
           }}
         />
+      )}
+
+      {/* Divisas entre posts — overlay, nunca exportado. */}
+      {quadros > 1 && (
+        <div className="pointer-events-none absolute inset-0">
+          {Array.from({ length: quadros }, (_, i) => (
+            <div
+              key={i}
+              className="absolute inset-y-0"
+              style={{ left: i * formato.largura * escala, width: formato.largura * escala }}
+            >
+              {i > 0 && (
+                <div className="absolute inset-y-0 left-0 border-l border-dashed border-white mix-blend-difference" />
+              )}
+              {rotularPosts && (
+                <span className="absolute top-1.5 left-1.5 rounded bg-black/55 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                  post {i + 1}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Overlay informativo — nunca é exportado. */}

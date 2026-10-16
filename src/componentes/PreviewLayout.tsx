@@ -1,5 +1,5 @@
 import type { CorFundo, Layout } from '../tipos'
-import { retanguloDoSlot } from '../lib/cover'
+import { quadrosDe, retanguloDoSlot } from '../lib/cover'
 import { sobrepoe } from '../lib/areaVisivel'
 
 /** Preview esquemático: os mesmos slots do editor, desenhados como retângulos. */
@@ -15,7 +15,8 @@ export function PreviewLayout({
   corFundo: CorFundo
 }) {
   const claro = corFundo === '#FFFFFF'
-  const escala = largura / 1080
+  const quadros = quadrosDe(layout)
+  const escala = largura / quadros / 1080
   const contorno = (layout.contorno ?? 0) * escala
   const retangulos = layout.slots.map((s) => retanguloDoSlot(s, layout, largura, altura))
 
@@ -42,6 +43,14 @@ export function PreviewLayout({
           />
         )
       })}
+
+      {Array.from({ length: quadros - 1 }, (_, i) => (
+        <div
+          key={i}
+          className="absolute inset-y-0 border-l border-dashed border-primary/70"
+          style={{ left: ((i + 1) * largura) / quadros }}
+        />
+      ))}
 
       {layout.linhaInterna && (
         <div

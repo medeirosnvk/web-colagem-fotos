@@ -11,7 +11,7 @@ import {
 import { Moon, RotateCcw, Redo2, Sun, Undo2 } from 'lucide-react'
 import { BandejaImagens } from './componentes/BandejaImagens'
 import { BotaoExportar } from './componentes/BotaoExportar'
-import { PainelLaminas } from './componentes/PainelLaminas'
+import { FaixaLaminas } from './componentes/PainelLaminas'
 import { AreaColagem } from './componentes/AreaColagem'
 import { PainelLateral } from './componentes/paineis/PainelLateral'
 import { PainelInferior } from './componentes/PainelInferior'
@@ -153,8 +153,10 @@ export default function App() {
         ) : (
           <div className="flex min-h-0 flex-1">
             <BandejaImagens />
-            <PainelLaminas />
-            <AreaColagem />
+            <div className="flex min-w-0 flex-1 flex-col">
+              <AreaColagem />
+              <FaixaLaminas />
+            </div>
             <PainelLateral />
           </div>
         )}

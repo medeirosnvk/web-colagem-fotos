@@ -1,6 +1,6 @@
 import { Pica } from 'pica'
 import type { CorFundo, EstadoSlot, Formato, Imagem, Layout } from '../tipos'
-import { retanguloDaImagem, retanguloDoSlot } from './cover'
+import { quadrosDe, retanguloDaImagem, retanguloDoSlot } from './cover'
 
 const pica = new Pica()
 
@@ -16,7 +16,8 @@ export interface ParametrosRender {
 const LIMIAR_DOWNSCALE = 2
 
 /**
- * Desenha a colagem num canvas na resolução exata do formato.
+ * Desenha a colagem num canvas na resolução exata do formato — num layout
+ * contínuo, com a largura de todos os posts que ele ocupa.
  * Nenhum pixel vem da tela — tudo é redesenhado a partir das imagens originais.
  */
 export async function renderizarColagem({
@@ -27,7 +28,7 @@ export async function renderizarColagem({
   imagens,
 }: ParametrosRender): Promise<HTMLCanvasElement> {
   const canvas = document.createElement('canvas')
-  canvas.width = formato.largura
+  canvas.width = formato.largura * quadrosDe(layout)
   canvas.height = formato.altura
 
   const ctx = canvas.getContext('2d')
@@ -39,7 +40,7 @@ export async function renderizarColagem({
   ctx.fillStyle = corFundo
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-  const escalaBase = canvas.width / 1080
+  const escalaBase = formato.largura / 1080
 
   for (const slotLayout of layout.slots) {
     const estado = slots.find((s) => s.slotId === slotLayout.id)
@@ -158,32 +159,50 @@ export function baixarBlob(blob: Blob, nome: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000)
 }
 
+/** Corta a lâmina contínua em posts do tamanho do formato, da esquerda para a direita. */
+function cortarEmPosts(canvas: HTMLCanvasElement, formato: Formato, quadros: number): HTMLCanvasElement[] {
+  if (quadros === 1) return [canvas]
+  return Array.from({ length: quadros }, (_, i) => {
+    const post = document.createElement('canvas')
+    post.width = formato.largura
+    post.height = formato.altura
+    const ctx = post.getContext('2d')
+    if (!ctx) throw new Error('Não foi possível criar o contexto 2D do canvas.')
+    ctx.drawImage(canvas, i * formato.largura, 0, formato.largura, formato.altura, 0, 0, formato.largura, formato.altura)
+    return post
+  })
+}
+
 /**
- * Renderiza e baixa uma lâmina por item, no tipo pedido. Cada lâmina vira um
- * canvas próprio na resolução exata do formato — nada é reaproveitado da tela.
+ * Renderiza e baixa as lâminas, no tipo pedido. Cada lâmina vira um canvas
+ * próprio na resolução exata do formato — nada é reaproveitado da tela — e a
+ * contínua é cortada em um arquivo por post, numerados na ordem do carrossel.
  */
 export async function exportarColagens(
   itens: ParametrosRender[],
   tipo: TipoArquivo,
 ): Promise<{ tipo: TipoArquivo; nome: string; bytes: number }[]> {
   const carimbo = carimboAgora()
-  const varias = itens.length > 1
+  const total = itens.reduce((n, p) => n + quadrosDe(p.layout), 0)
+  const varias = total > 1
   const resultados = []
+  let indice = 0
 
-  for (const [i, params] of itens.entries()) {
-    const canvas = await renderizarColagem(params)
-    const blob = await canvasParaBlob(canvas, tipo)
-    const nome = nomeArquivo(params.formato, tipo, {
-      carimbo,
-      indice: varias ? i + 1 : undefined,
-    })
-    baixarBlob(blob, nome)
-    resultados.push({ tipo, nome, bytes: blob.size })
+  for (const params of itens) {
+    const posts = cortarEmPosts(await renderizarColagem(params), params.formato, quadrosDe(params.layout))
+    for (const post of posts) {
+      indice++
+      const blob = await canvasParaBlob(post, tipo)
+      const nome = nomeArquivo(params.formato, tipo, {
+        carimbo,
+        indice: varias ? indice : undefined,
+      })
+      baixarBlob(blob, nome)
+      resultados.push({ tipo, nome, bytes: blob.size })
 
-    // Downloads em rajada disparam o bloqueio de "vários arquivos" do Chrome;
-    // um respiro entre eles resolve.
-    if (varias && i < itens.length - 1) {
-      await new Promise((r) => setTimeout(r, 350))
+      // Downloads em rajada disparam o bloqueio de "vários arquivos" do Chrome;
+      // um respiro entre eles resolve.
+      if (indice < total) await new Promise((r) => setTimeout(r, 350))
     }
   }
 

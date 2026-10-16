@@ -3,16 +3,18 @@ import { Copy, Eraser, Layers, Plus, Trash2 } from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../store/useColagemStore'
 import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
+import { quadrosDe } from '../lib/cover'
 import { TelaColagem } from './editor/TelaColagem'
-import { FAIXA } from './ui/faixa'
 import type { Lamina } from '../tipos'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 
-const LARGURA_MINIATURA = 84
-const ALTURA_MAX_MINIATURA = 118
+/** Altura das miniaturas: todas iguais, para a faixa ler como o carrossel deslizando. */
+const ALTURA_MINIATURA = 96
+/** Largura mínima de uma lâmina — abaixo disso as três ações não cabem. */
+const LARGURA_MIN = 76
 
 /** Ação de uma lâmina: pequena, mas sempre visível — nada escondido no hover. */
 function Acao({
@@ -56,23 +58,37 @@ function Acao({
   )
 }
 
-function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
+function Miniatura({
+  lamina,
+  numero,
+  primeiroPost,
+}: {
+  lamina: Lamina
+  numero: number
+  /** Posição do primeiro post desta lâmina no carrossel (1-based). */
+  primeiroPost: number
+}) {
   const ativa = useColagemStore((s) => s.laminaAtivaId === lamina.id)
   const total = useColagemStore((s) => s.laminas.length)
   const selecionar = useColagemStore((s) => s.selecionarLamina)
   const duplicar = useColagemStore((s) => s.duplicarLamina)
   const remover = useColagemStore((s) => s.removerLamina)
   const esvaziar = useColagemStore((s) => s.esvaziarLamina)
+  const formato = formatoPorId(useColagemStore((s) => s.formatoId))
 
   const layout = layoutPorId(lamina.layoutId)
   const preenchidos = lamina.slots.filter((s) => s.imagemId).length
+  const quadros = layout ? quadrosDe(layout) : 1
+  const largura = formato ? (ALTURA_MINIATURA * formato.largura * quadros) / formato.altura : 72
+  const posts =
+    quadros > 1 ? `posts ${primeiroPost}–${primeiroPost + quadros - 1}` : `post ${primeiroPost}`
 
   return (
-    <div className="relative">
+    <div className="shrink-0" style={{ width: Math.max(LARGURA_MIN, largura + 14) }}>
       <button
         type="button"
         onClick={() => selecionar(lamina.id)}
-        title={`${layout?.nome ?? 'Lâmina'} · ${preenchidos} de ${lamina.slots.length} slots`}
+        title={`Lâmina ${numero} · ${posts} · ${layout?.nome ?? ''} · ${preenchidos} de ${lamina.slots.length} slots`}
         aria-current={ativa ? 'true' : undefined}
         className={cn(
           'block w-full cursor-pointer rounded-lg border bg-card p-1.5 shadow-xs transition-colors hover:bg-accent',
@@ -81,15 +97,18 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
       >
         <span className="flex items-center justify-center">
           <TelaColagem
-            larguraMax={LARGURA_MINIATURA}
-            alturaMax={ALTURA_MAX_MINIATURA}
+            larguraMax={largura}
+            alturaMax={ALTURA_MINIATURA}
             interativo={false}
             mostrarZonaSegura={false}
+            rotularPosts={false}
             lamina={lamina}
           />
         </span>
-        <span className="mt-1 flex items-center justify-between px-0.5 text-[10px] text-muted-foreground">
-          <span className={cn(ativa && 'font-semibold text-primary')}>{numero}</span>
+        <span className="mt-1 flex items-center justify-between gap-1 px-0.5 text-[10px] text-muted-foreground">
+          <span className={cn('truncate', ativa && 'font-semibold text-primary')}>
+            {quadros > 1 ? `${primeiroPost}–${primeiroPost + quadros - 1}` : primeiroPost}
+          </span>
           <span className="tabular-nums">
             {preenchidos}/{lamina.slots.length}
           </span>
@@ -123,10 +142,10 @@ function Miniatura({ lamina, numero }: { lamina: Lamina; numero: number }) {
 }
 
 /**
- * Lista de lâminas. Em coluna no layout amplo; em fila horizontal rolável no
- * compacto, onde altura é o recurso escasso.
+ * Lâminas lado a lado, na ordem do carrossel — como ele aparece ao deslizar.
+ * Uma lâmina contínua ocupa a largura de todos os seus posts.
  */
-export function ConteudoLaminas({ horizontal = false }: { horizontal?: boolean }) {
+export function ConteudoLaminas() {
   const laminas = useColagemStore((s) => s.laminas)
   const adicionar = useColagemStore((s) => s.adicionarLamina)
   const ativa = useColagemStore(laminaAtiva)
@@ -136,18 +155,17 @@ export function ConteudoLaminas({ horizontal = false }: { horizontal?: boolean }
     layoutPorId(ativa?.layoutId ?? null)?.nome ?? ''
   })`
 
+  let post = 1
+  const inicios = laminas.map((l) => {
+    const inicio = post
+    post += quadrosDe(layoutPorId(l.layoutId) ?? {})
+    return inicio
+  })
+
   return (
-    <div
-      className={
-        horizontal
-          ? 'flex min-h-0 gap-2 overflow-x-auto p-3'
-          : 'min-h-0 flex-1 space-y-2 overflow-y-auto p-2'
-      }
-    >
+    <div className="flex min-h-0 items-start gap-2 overflow-x-auto p-3">
       {laminas.map((lamina, i) => (
-        <div key={lamina.id} className={horizontal ? 'w-24 shrink-0' : ''}>
-          <Miniatura lamina={lamina} numero={i + 1} />
-        </div>
+        <Miniatura key={lamina.id} lamina={lamina} numero={i + 1} primeiroPost={inicios[i]} />
       ))}
 
       <Tooltip>
@@ -156,39 +174,43 @@ export function ConteudoLaminas({ horizontal = false }: { horizontal?: boolean }
             variant="outline"
             size="sm"
             onClick={adicionar}
-            className={cn(
-              'border-dashed text-xs text-muted-foreground',
-              horizontal ? 'h-auto w-24 shrink-0 flex-col' : 'w-full',
-            )}
+            className="w-20 shrink-0 flex-col border-dashed text-xs text-muted-foreground"
+            style={{ height: ALTURA_MINIATURA + 30 }}
           >
             <Plus /> Lâmina
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">{titulo}</TooltipContent>
+        <TooltipContent side="top">{titulo}</TooltipContent>
       </Tooltip>
     </div>
   )
 }
 
 /**
- * Pilha de lâminas do documento. Cada uma é uma colagem com layout e
- * preenchimento próprios; formato, cor de fundo e bandeja de fotos são
- * compartilhados.
+ * Faixa de lâminas do layout amplo, embaixo da colagem. Cada uma é uma colagem
+ * com layout e preenchimento próprios; formato, cor de fundo e bandeja de fotos
+ * são compartilhados.
  */
-export function PainelLaminas() {
+export function FaixaLaminas() {
   const laminas = useColagemStore((s) => s.laminas)
+  const posts = useColagemStore((s) =>
+    s.laminas.reduce((n, l) => n + quadrosDe(layoutPorId(l.layoutId) ?? {}), 0),
+  )
 
   return (
-    <aside className="flex w-32 shrink-0 flex-col border-r bg-sidebar">
-      <header className={`${FAIXA} gap-1.5 px-3`}>
+    <section className="shrink-0 border-t bg-sidebar">
+      <header className="flex items-center gap-1.5 px-3 pt-2">
         <Layers className="size-3.5 text-muted-foreground" />
         <h2 className="text-xs font-medium">Lâminas</h2>
-        <Badge variant="secondary" className="ml-auto h-4 px-1.5 text-[10px] tabular-nums">
+        <Badge variant="secondary" className="h-4 px-1.5 text-[10px] tabular-nums">
           {laminas.length}
         </Badge>
+        {posts !== laminas.length && (
+          <span className="text-[11px] text-muted-foreground">· {posts} posts no carrossel</span>
+        )}
       </header>
 
       <ConteudoLaminas />
-    </aside>
+    </section>
   )
 }

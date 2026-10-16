@@ -87,7 +87,7 @@ export function PainelInferior() {
       {aberta && (
         <div className="max-h-[46svh] min-h-0 overflow-y-auto">
           {aba === 'fotos' && <ConteudoFotos colunas="grid-cols-4 sm:grid-cols-6" />}
-          {aba === 'laminas' && <ConteudoLaminas horizontal />}
+          {aba === 'laminas' && <ConteudoLaminas />}
           {aba === 'formato' && (
             <div className="p-4">
               <AbaFormato />

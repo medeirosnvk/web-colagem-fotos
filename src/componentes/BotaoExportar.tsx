@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { AlertCircle, Check, Download, Loader2 } from 'lucide-react'
 import { useColagemStore } from '../store/useColagemStore'
+import { layoutPorId } from '../data/layouts'
+import { quadrosDe } from '../lib/cover'
 import { useExportacaoStore } from '../store/useExportacaoStore'
 import { SeletorEscopo, SeletorTipoArquivo } from './SeletorTipoArquivo'
 import { Button } from '@/components/ui/button'
@@ -28,6 +30,7 @@ export function BotaoExportar() {
 
   const alvo = escopo === 'todas' ? laminas : laminas.filter((l) => l.id === laminaAtivaId)
   const temFoto = alvo.some((l) => l.slots.some((x) => x.imagemId))
+  const arquivos = alvo.reduce((n, l) => n + quadrosDe(layoutPorId(l.layoutId) ?? {}), 0)
   const vazios = alvo.reduce((n, l) => n + l.slots.filter((x) => !x.imagemId).length, 0)
 
   const [concluido, setConcluido] = useState(false)
@@ -46,7 +49,7 @@ export function BotaoExportar() {
   const titulo = !temFoto
     ? 'Ponha ao menos uma foto na colagem'
     : [
-        `Baixar ${alvo.length > 1 ? `${alvo.length} arquivos` : '1 arquivo'} em ${tipo.toUpperCase()}, na resolução exata do formato`,
+        `Baixar ${arquivos > 1 ? `${arquivos} arquivos` : '1 arquivo'} em ${tipo.toUpperCase()}, na resolução exata do formato`,
         vazios > 0 &&
           `${vazios} ${vazios === 1 ? 'slot vazio sai' : 'slots vazios saem'} com a cor de fundo`,
         gerados.length > 0 &&

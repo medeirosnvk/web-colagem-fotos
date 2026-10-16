@@ -10,9 +10,9 @@ Roda inteiramente no navegador: **sem backend, sem upload, nenhuma imagem
 trafega pela rede**. React + Vite + TypeScript, Tailwind v4, shadcn/ui (Radix), Zustand,
 dnd-kit, react-dropzone, lucide-react e pica.
 
-A interface é **uma tela só** — bandeja de fotos e pilha de lâminas à esquerda,
-colagem no centro, painel com abas (Formato · Layout · Ajustes) à direita e a
-exportação nos controles do topo. Não existe wizard: tudo pode ser mexido a
+A interface é **uma tela só** — bandeja de fotos à esquerda, colagem no centro
+com a faixa de lâminas (o carrossel, da esquerda para a direita) embaixo, painel
+com abas (Formato · Layout · Ajustes) à direita e a exportação nos controles do topo. Não existe wizard: tudo pode ser mexido a
 qualquer momento, com desfazer/refazer.
 
 Interface em **português do Brasil** — nomes de arquivos, variáveis, tipos e
@@ -70,7 +70,7 @@ componentes também são em português. Mantenha esse padrão.
 | `src/lib/useCompacto.ts` | Detecta tela estreita: abaixo de 1024 px o layout muda de estrutura |
 | `src/componentes/PainelInferior.tsx` | Gaveta com abas do layout compacto |
 | `src/componentes/paineis/` | Uma aba do painel lateral por arquivo |
-| `src/componentes/PainelLaminas.tsx` | Pilha de lâminas, com miniaturas reais e o botão de adicionar |
+| `src/componentes/PainelLaminas.tsx` | Faixa horizontal de lâminas (ordem do carrossel), com miniaturas reais e o botão de adicionar |
 | `src/componentes/AreaColagem.tsx` | Centro: mede o espaço livre e escala a colagem para caber |
 | `src/componentes/editor/` | Tela da colagem e slot interativo |
 | `src/componentes/ui/` | Peças do app: `BotaoIcone` (ícone + tooltip), `CartaoOpcao`, `Logo`, `faixa` (altura dos cabeçalhos) |
@@ -98,10 +98,24 @@ Consequências ao mexer aqui:
   documento restaurado, e é isso que `ajustarFoco` faz.
 - Sempre existe pelo menos uma lâmina: `removerLamina` não deixa esvaziar.
 
+### Carrossel contínuo (lâminas de vários posts)
+
+- Um layout com `quadros: N` (estilo `continuo`, só feed 3:4, 4:5 e 1:1) faz a lâmina
+  ocupar **N posts** lado a lado. Os slots continuam em 0..1, mas da largura **total**
+  (N × largura do formato) — é isso que deixa uma foto atravessar a divisa. No catálogo,
+  `continuo()` recebe as posições em unidades de post (x de 0..N) e converte.
+- `gap`, `margem` e `contorno` seguem na base de **um post** (1080): `retanguloDoSlot`
+  divide a largura do canvas por `quadrosDe(layout)`. Quem calcula escala com
+  `largura / 1080` à mão precisa fazer o mesmo.
+- Editor, miniatura, preview e sugestão usam a largura total; as divisas tracejadas e o
+  rótulo "post N" são overlay (não exportados).
+- Exportação: renderiza a lâmina inteira num canvas largo e **corta em N arquivos** do
+  formato. A numeração dos arquivos é a do post no carrossel, não a da lâmina.
+
 ### Layout amplo e compacto
 
-Abaixo de **1024 px** (`useCompacto`) as quatro colunas não cabem — sozinhas
-somam ~690 px e não sobra colagem para editar. Aí o app troca de estrutura: a
+Abaixo de **1024 px** (`useCompacto`) as colunas não cabem e não sobra colagem
+para editar. Aí o app troca de estrutura: a
 colagem ocupa a tela e fotos, lâminas, formato, layout e ajustes viram abas
 numa gaveta recolhível embaixo (`PainelInferior`).
 
@@ -260,7 +274,7 @@ fundo nos vãos, banda de contorno entre fotos sobrepostas, posição do filete.
   erro no console**. Por isso `TelaColagem` gera um `useId()` e o repassa como
   `instancia` para os ids de `SlotEditor`. `disabled: true` nas miniaturas não
   basta — o id continua registrado.
-- **As faixas de cabeçalho das quatro colunas vêm de `ui/faixa.ts`.** Elas
+- **As faixas de cabeçalho das colunas vêm de `ui/faixa.ts`.** Elas
   formam uma linha só de ponta a ponta; se uma usar padding próprio em vez da
   altura fixa, o alinhamento quebra.
 - **A exportação não é uma etapa nem uma aba** — é o seletor de formato mais o

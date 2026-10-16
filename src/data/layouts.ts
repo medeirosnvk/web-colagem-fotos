@@ -6,6 +6,9 @@ const ALTAS: Orientacao[] = ['vertical', 'quadrado']
 const DEITADAS: Orientacao[] = ['paisagem', 'quadrado']
 const EM_PE: Orientacao[] = ['vertical']
 const PAISAGEM: Orientacao[] = ['paisagem']
+/** Carrossel do feed: posts em pé ou quadrados (Stories não tem carrossel). */
+const CONTINUO: Orientacao[] = ['vertical', 'quadrado']
+const PROPORCOES_CARROSSEL: ProporcaoId[] = ['3:4', '4:5', '1:1']
 
 function slot(id: string, x: number, y: number, w: number, h: number): SlotLayout {
   return { id, x, y, w, h }
@@ -52,6 +55,25 @@ function grade(
     }
   }
   return montar(id, nome, 'grade', TODAS, slots, opcoes)
+}
+
+/**
+ * Layout contínuo: ocupa `quadros` posts lado a lado. As posições vêm em unidades
+ * de post (x de 0..quadros, y de 0..1) — mais fácil de ler e de alinhar com as
+ * divisas — e são convertidas para 0..1 da largura total.
+ */
+function continuo(
+  id: string,
+  nome: string,
+  quadros: number,
+  posicoes: [number, number, number, number][],
+  opcoes: Opcoes = {},
+): Layout {
+  const slots = posicoes.map(([x, y, w, h], i) => slot(`s${i + 1}`, x / quadros, y, w / quadros, h))
+  return {
+    ...montar(id, nome, 'continuo', CONTINUO, slots, { proporcoes: PROPORCOES_CARROSSEL, ...opcoes }),
+    quadros,
+  }
 }
 
 /**
@@ -509,6 +531,76 @@ export const CATALOGO: Record<string, Layout> = {
     ],
     { contorno: 14 },
   ),
+  // ------------------------------------------------------------------
+  // Contínuos — a lâmina ocupa 2 a 4 posts e as fotos atravessam a divisa:
+  // ao deslizar o carrossel, um post continua no outro. Posições em unidades
+  // de post (x de 0..quadros).
+  // ------------------------------------------------------------------
+  'c2-panoramica': continuo('c2-panoramica', '2 posts — panorâmica', 2, [[0, 0, 2, 1]]),
+  'c2-ponte': continuo('c2-ponte', '2 posts — foto na divisa', 2, [
+    [0, 0, 0.64, 1],
+    [0.72, 0.2, 0.56, 0.6],
+    [1.36, 0, 0.64, 1],
+  ]),
+  'c2-transborda': continuo('c2-transborda', '2 posts — grande transbordando', 2, [
+    [0, 0, 1.3, 1],
+    [1.4, 0.1, 0.5, 0.38],
+    [1.4, 0.52, 0.5, 0.38],
+  ]),
+  'c2-respiro': continuo('c2-respiro', '2 posts — com respiro', 2, [
+    [0.12, 0.14, 1, 0.72],
+    [1.24, 0.3, 0.64, 0.4],
+  ]),
+  'c2-sobreposta': continuo(
+    'c2-sobreposta',
+    '2 posts — sobreposta na divisa',
+    2,
+    [
+      [0, 0, 1.1, 1],
+      [1.5, 0, 0.5, 1],
+      [0.8, 0.22, 0.6, 0.56],
+    ],
+    { contorno: 14 },
+  ),
+
+  'c3-panoramica': continuo('c3-panoramica', '3 posts — panorâmica', 3, [[0, 0, 3, 1]]),
+  'c3-ponte': continuo('c3-ponte', '3 posts — fotos nas divisas', 3, [
+    [0, 0, 1.3, 1],
+    [1.42, 0.16, 0.76, 0.68],
+    [2.3, 0, 0.7, 1],
+  ]),
+  'c3-respiro': continuo('c3-respiro', '3 posts — com respiro', 3, [
+    [0.1, 0.12, 1.2, 0.76],
+    [1.45, 0.24, 0.7, 0.52],
+    [2.27, 0.12, 0.63, 0.76],
+  ]),
+  'c3-editorial': continuo('c3-editorial', '3 posts — editorial', 3, [
+    [0, 0, 1.15, 1],
+    [1.25, 0.08, 0.55, 0.4],
+    [1.25, 0.52, 0.55, 0.4],
+    [1.9, 0.15, 0.5, 0.7],
+    [2.5, 0, 0.5, 1],
+  ]),
+  'c3-sobreposta': continuo(
+    'c3-sobreposta',
+    '3 posts — sobrepostas',
+    3,
+    [
+      [0, 0, 1.25, 1],
+      [1.05, 0.18, 0.55, 0.48],
+      [1.7, 0, 1.3, 1],
+      [1.45, 0.55, 0.5, 0.35],
+    ],
+    { contorno: 14 },
+  ),
+
+  'c4-panoramica': continuo('c4-panoramica', '4 posts — panorâmica', 4, [[0, 0, 4, 1]]),
+  'c4-ritmo': continuo('c4-ritmo', '4 posts — ritmo', 4, [
+    [0, 0, 1.3, 1],
+    [1.4, 0.15, 0.75, 0.7],
+    [2.27, 0, 1, 1],
+    [3.4, 0.2, 0.6, 0.6],
+  ]),
 }
 
 export const ROTULO_ESTILO: Record<EstiloLayout, string> = {
@@ -516,6 +608,7 @@ export const ROTULO_ESTILO: Record<EstiloLayout, string> = {
   moldura: 'Moldura e respiro',
   livre: 'Assimétricos',
   sobreposto: 'Sobrepostos',
+  continuo: 'Carrossel contínuo',
 }
 
 export const DESCRICAO_ESTILO: Record<EstiloLayout, string> = {
@@ -523,10 +616,12 @@ export const DESCRICAO_ESTILO: Record<EstiloLayout, string> = {
   moldura: 'Foto flutuando na cor de fundo, com área livre para texto.',
   livre: 'Posições assimétricas, sem sobreposição.',
   sobreposto: 'Fotos se cruzando, separadas por um contorno na cor de fundo.',
+  continuo:
+    'A lâmina ocupa vários posts e as fotos atravessam a divisa: ao deslizar, um post continua no outro.',
 }
 
 /** Ordem dos estilos na etapa de layout. */
-const ORDEM_ESTILOS: EstiloLayout[] = ['grade', 'moldura', 'livre', 'sobreposto']
+const ORDEM_ESTILOS: EstiloLayout[] = ['grade', 'moldura', 'livre', 'sobreposto', 'continuo']
 
 /** Ordem das grades em proporções altas (empilhamento vertical primeiro). */
 const GRADES_VERTICAL = [

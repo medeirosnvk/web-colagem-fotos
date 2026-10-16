@@ -5,6 +5,8 @@ import { formatoPorId } from '../../data/formatos'
 import { DESCRICAO_ESTILO, layoutsAgrupados, ROTULO_ESTILO } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
 import { sugerirLayouts } from '../../lib/sugerirLayouts'
+import { quadrosDe } from '../../lib/cover'
+import type { Formato, Layout } from '../../tipos'
 import { PreviewLayout } from '../PreviewLayout'
 import { CartaoOpcao } from '../ui/CartaoOpcao'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +14,23 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
 const LARGURA_PREVIEW = 100
 const ALTURA_MAX_PREVIEW = 112
+
+/**
+ * Tamanho do preview: um post cabe numa coluna da grade; o contínuo ocupa as
+ * duas colunas e mantém a proporção da faixa inteira.
+ */
+function medidaPreview(l: Layout, formato: Formato) {
+  const quadros = quadrosDe(l)
+  const larguraBase = quadros > 1 ? LARGURA_PREVIEW * 2 + 40 : LARGURA_PREVIEW
+  const alturaBase = (larguraBase * formato.altura) / (formato.largura * quadros)
+  const escala = Math.min(1, ALTURA_MAX_PREVIEW / alturaBase)
+  return {
+    largura: Math.round(larguraBase * escala),
+    altura: Math.round(alturaBase * escala),
+    alturaCaixa: quadros > 1 ? Math.round(alturaBase * escala) + 8 : ALTURA_MAX_PREVIEW,
+    largo: quadros > 1,
+  }
+}
 
 /** Filtro por quantidade de fotos — `null` mostra tudo. */
 type Filtro = number | null
@@ -115,8 +134,7 @@ export function AbaLayout() {
             {sugestoes.map((sug) => {
               const l = sug.layout
               const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
-              const alturaBase = (LARGURA_PREVIEW * formato.altura) / formato.largura
-              const escala = Math.min(1, ALTURA_MAX_PREVIEW / alturaBase)
+              const m = medidaPreview(l, formato)
               const pct = Math.round(sug.aproveitamento * 100)
               const aviso = sug.slotsVazios
                 ? `${sug.slotsVazios} ${sug.slotsVazios === 1 ? 'espaço vazio' : 'espaços vazios'}`
@@ -130,7 +148,7 @@ export function AbaLayout() {
                   ativo={layoutId === l.id}
                   onClick={() => aplicarSugestao(l.id, sug.atribuicoes)}
                   title={`${l.nome} — ${pct}% de cada foto aparece, em média${aviso ? ` · ${aviso}` : ''}`}
-                  className="relative gap-1.5"
+                  className={`relative gap-1.5 ${m.largo ? 'col-span-2' : ''}`}
                 >
                   <Badge
                     variant={pct >= 90 ? 'default' : 'secondary'}
@@ -140,12 +158,12 @@ export function AbaLayout() {
                   </Badge>
                   <span
                     className="flex items-center justify-center"
-                    style={{ height: ALTURA_MAX_PREVIEW }}
+                    style={{ height: m.alturaCaixa }}
                   >
                     <PreviewLayout
                       layout={efetivo}
-                      largura={Math.round(LARGURA_PREVIEW * escala)}
-                      altura={Math.round(alturaBase * escala)}
+                      largura={m.largura}
+                      altura={m.altura}
                       corFundo={corFundo}
                     />
                   </span>
@@ -171,8 +189,7 @@ export function AbaLayout() {
             {layouts.map((l) => {
               // O preview do layout escolhido acompanha os sliders de espaçamento.
               const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
-              const alturaBase = (LARGURA_PREVIEW * formato.altura) / formato.largura
-              const escala = Math.min(1, ALTURA_MAX_PREVIEW / alturaBase)
+              const m = medidaPreview(l, formato)
 
               return (
                 <CartaoOpcao
@@ -180,16 +197,16 @@ export function AbaLayout() {
                   ativo={layoutId === l.id}
                   onClick={() => definirLayout(l.id)}
                   title={l.nome}
-                  className="gap-1.5"
+                  className={`gap-1.5 ${m.largo ? 'col-span-2' : ''}`}
                 >
                   <span
                     className="flex items-center justify-center"
-                    style={{ height: ALTURA_MAX_PREVIEW }}
+                    style={{ height: m.alturaCaixa }}
                   >
                     <PreviewLayout
                       layout={efetivo}
-                      largura={Math.round(LARGURA_PREVIEW * escala)}
-                      altura={Math.round(alturaBase * escala)}
+                      largura={m.largura}
+                      altura={m.altura}
                       corFundo={corFundo}
                     />
                   </span>

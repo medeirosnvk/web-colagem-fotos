@@ -1,4 +1,5 @@
 import type { Imagem, Layout } from '../tipos'
+import { quadrosDe } from './cover'
 
 /**
  * Sugestão de layouts pela proporção das fotos.
@@ -58,8 +59,10 @@ function parear(a: Item[], b: Item[], nota: (x: Item, y: Item) => number) {
 }
 
 function avaliar(layout: Layout, fotos: Imagem[], largura: number, altura: number): Sugestao {
+  // Num layout contínuo os slots são relativos à largura de todos os posts.
+  const larguraTela = largura * quadrosDe(layout)
   const slots: Item[] = layout.slots
-    .map((s) => ({ id: s.id, razao: (s.w * largura) / (s.h * altura) }))
+    .map((s) => ({ id: s.id, razao: (s.w * larguraTela) / (s.h * altura) }))
     .sort((x, y) => x.razao - y.razao)
   const imagens: Item[] = fotos
     .map((f) => ({ id: f.id, razao: f.largura / f.altura }))

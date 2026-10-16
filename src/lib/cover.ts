@@ -1,12 +1,18 @@
 import type { EstadoSlot, Layout, Retangulo, SlotLayout } from '../tipos'
 
+/** Quantos posts do carrossel o layout ocupa. */
+export function quadrosDe(layout: Pick<Layout, 'quadros'>): number {
+  return layout.quadros ?? 1
+}
+
 /**
  * Converte um slot em coordenadas relativas para o retângulo em pixels do
  * canvas final, já descontando gap interno e margem externa.
  *
  * gap e margem são definidos na base de largura 1080; aqui são escalados para
  * a largura real do formato, de modo que o layout seja independente da
- * resolução.
+ * resolução. Num layout contínuo o canvas tem a largura de vários posts, mas a
+ * base continua sendo a largura de um post.
  */
 export function retanguloDoSlot(
   s: SlotLayout,
@@ -14,7 +20,7 @@ export function retanguloDoSlot(
   larguraCanvas: number,
   alturaCanvas: number,
 ): Retangulo {
-  const escala = larguraCanvas / 1080
+  const escala = larguraCanvas / quadrosDe(layout) / 1080
   const gap = (layout.gap * escala) / 2
   const margem = layout.margem * escala
   const eps = 0.0001

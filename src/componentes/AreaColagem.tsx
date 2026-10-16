@@ -3,6 +3,7 @@ import { laminaAtiva, useColagemStore } from '../store/useColagemStore'
 import { formatoPorId } from '../data/formatos'
 import { layoutPorId } from '../data/layouts'
 import { useMedidas } from '../lib/useMedidas'
+import { quadrosDe } from '../lib/cover'
 import { TelaColagem } from './editor/TelaColagem'
 import { FAIXA } from './ui/faixa'
 import { Badge } from '@/components/ui/badge'
@@ -41,6 +42,7 @@ export function AreaColagem() {
           )}
           <span className="truncate font-medium text-foreground">{layout.nome}</span>
           <span className="tabular-nums">
+            {quadrosDe(layout) > 1 && `${quadrosDe(layout)} posts de `}
             {formato.largura}×{formato.altura} px · {preenchidos} de {slots.length} slots
           </span>
         </p>
