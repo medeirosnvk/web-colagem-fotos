@@ -172,6 +172,11 @@ desenhado por cima). É isso que permite os layouts sobrepostos.
 1080** e escalados por `largura / 1080` na hora de virar pixels, para o layout
 ser independente da resolução.
 
+O `contorno` só vale para as fotos que ficam **por cima** de outra
+(`contornosDosSlots` em `cover.ts`) — numa foto de fundo ele vazaria para fora
+da tela. A lâmina pode sobrescrevê-lo (`Lamina.contorno`, slider "Borda das
+fotos de cima" na aba Ajustes; 0 = sem borda). Trocar de layout volta ao padrão.
+
 Estado de cada slot: `{ slotId, imagemId?, escala, offsetX, offsetY }`, com
 `escala = 1` significando cover exato e os offsets em -1..1.
 

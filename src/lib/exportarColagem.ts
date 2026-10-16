@@ -1,6 +1,6 @@
 import { Pica } from 'pica'
 import type { CorFundo, EstadoSlot, Formato, Imagem, Layout } from '../tipos'
-import { quadrosDe, retanguloDaImagem, retanguloDoSlot } from './cover'
+import { contornosDosSlots, quadrosDe, retanguloDaImagem, retanguloDoSlot } from './cover'
 
 const pica = new Pica()
 
@@ -42,20 +42,25 @@ export async function renderizarColagem({
 
   const escalaBase = formato.largura / 1080
 
-  for (const slotLayout of layout.slots) {
+  const retangulos = layout.slots.map((s) =>
+    retanguloDoSlot(s, layout, canvas.width, canvas.height),
+  )
+  const contornos = contornosDosSlots(layout, retangulos)
+
+  for (const [i, slotLayout] of layout.slots.entries()) {
     const estado = slots.find((s) => s.slotId === slotLayout.id)
     if (!estado?.imagemId) continue
 
     const imagem = imagens.find((i) => i.id === estado.imagemId)
     if (!imagem) continue
 
-    const destino = retanguloDoSlot(slotLayout, layout, canvas.width, canvas.height)
+    const destino = retangulos[i]
     if (destino.w <= 0 || destino.h <= 0) continue
 
     // Contorno na cor de fundo: pintado antes da foto, então as fotos
     // desenhadas depois recortam as anteriores (efeito recorte de revista).
-    if (layout.contorno) {
-      const c = layout.contorno * escalaBase
+    if (contornos[i]) {
+      const c = contornos[i] * escalaBase
       ctx.fillStyle = corFundo
       ctx.fillRect(destino.x - c, destino.y - c, destino.w + c * 2, destino.h + c * 2)
     }

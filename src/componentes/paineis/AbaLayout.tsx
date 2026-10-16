@@ -45,7 +45,7 @@ export function AbaLayout() {
   const laminas = useColagemStore((s) => s.laminas)
   const fotosSelecionadas = useColagemStore((s) => s.fotosSelecionadas)
 
-  const { layoutId, gap, margem } = lamina
+  const { layoutId, gap, margem, contorno } = lamina
 
   const [filtro, setFiltro] = useState<Filtro>(null)
 
@@ -133,7 +133,7 @@ export function AbaLayout() {
           <div className="grid grid-cols-2 gap-2">
             {sugestoes.map((sug) => {
               const l = sug.layout
-              const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
+              const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem, contorno) : l
               const m = medidaPreview(l, formato)
               const pct = Math.round(sug.aproveitamento * 100)
               const aviso = sug.slotsVazios
@@ -202,7 +202,7 @@ export function AbaLayout() {
               <div className="grid grid-cols-2 gap-2">
                 {bloco.layouts.map((l) => {
                   // O preview do layout escolhido acompanha os sliders de espaçamento.
-                  const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem) : l
+                  const efetivo = l.id === layoutId ? layoutEfetivo(l, gap, margem, contorno) : l
                   const m = medidaPreview(l, formato)
 
                   return (

@@ -1,5 +1,5 @@
 import type { CorFundo, Layout } from '../tipos'
-import { quadrosDe, retanguloDoSlot } from '../lib/cover'
+import { contornosDosSlots, quadrosDe, retanguloDoSlot } from '../lib/cover'
 import { sobrepoe } from '../lib/areaVisivel'
 
 /** Preview esquemático: os mesmos slots do editor, desenhados como retângulos. */
@@ -17,8 +17,8 @@ export function PreviewLayout({
   const claro = corFundo === '#FFFFFF'
   const quadros = quadrosDe(layout)
   const escala = largura / quadros / 1080
-  const contorno = (layout.contorno ?? 0) * escala
   const retangulos = layout.slots.map((s) => retanguloDoSlot(s, layout, largura, altura))
+  const contornos = contornosDosSlots(layout, retangulos)
 
   return (
     <div
@@ -28,7 +28,7 @@ export function PreviewLayout({
       {retangulos.map((r, i) => {
         // Sem contorno, uma foto por cima de outra some no preview (mesmo
         // cinza). Um fio na cor de fundo separa as duas.
-        const fio = contorno || (retangulos.slice(0, i).some((a) => sobrepoe(a, r)) ? 1 : 0)
+        const fio = contornos[i] * escala || (retangulos.slice(0, i).some((a) => sobrepoe(a, r)) ? 1 : 0)
         return (
           <div
             key={layout.slots[i].id}

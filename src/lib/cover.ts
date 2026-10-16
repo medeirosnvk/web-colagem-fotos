@@ -1,4 +1,5 @@
 import type { EstadoSlot, Layout, Retangulo, SlotLayout } from '../tipos'
+import { sobrepoe } from './areaVisivel'
 
 /** Quantos posts do carrossel o layout ocupa. */
 export function quadrosDe(layout: Pick<Layout, 'quadros'>): number {
@@ -95,4 +96,13 @@ export const ESCALA_COVER = 1
 
 export function clamp(v: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, v))
+}
+
+/**
+ * Contorno de cada slot, em px na base 1080: só as fotos que ficam por cima de
+ * outra levam — numa foto de fundo ele só vazaria para fora da tela.
+ */
+export function contornosDosSlots(layout: Pick<Layout, 'contorno'>, retangulos: Retangulo[]) {
+  const c = layout.contorno ?? 0
+  return retangulos.map((r, i) => (c && retangulos.slice(0, i).some((a) => sobrepoe(a, r)) ? c : 0))
 }

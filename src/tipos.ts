@@ -61,8 +61,9 @@ export interface Layout {
   /** Margem externa, em px na base de largura 1080. */
   margem: number
   /**
-   * Borda na cor de fundo em volta de cada foto, em px na base 1080. É o que
-   * separa as fotos nos layouts sobrepostos (recorte de revista).
+   * Borda na cor de fundo em volta das fotos que ficam por cima de outra, em px
+   * na base 1080. É o que separa as fotos nos layouts sobrepostos (recorte de
+   * revista).
    */
   contorno?: number
   linhaInterna?: LinhaInterna
@@ -112,6 +113,8 @@ export interface Lamina {
   gap: number
   /** Margem externa, em px na base de largura 1080. */
   margem: number
+  /** Contorno das fotos de cima, em px na base 1080 — ausente usa o do layout. */
+  contorno?: number
 }
 
 export interface Retangulo {

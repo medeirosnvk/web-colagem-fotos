@@ -47,7 +47,7 @@ export const useExportacaoStore = create<EstadoExportacao>((set, get) => ({
       if (!layoutBase) continue
       itens.push({
         formato,
-        layout: layoutEfetivo(layoutBase, lamina.gap, lamina.margem),
+        layout: layoutEfetivo(layoutBase, lamina.gap, lamina.margem, lamina.contorno),
         corFundo: s.corFundo,
         slots: lamina.slots,
         imagens: s.imagens,

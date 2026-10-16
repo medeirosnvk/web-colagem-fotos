@@ -8,6 +8,7 @@ import {
   Wand2,
 } from 'lucide-react'
 import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
+import { layoutPorId } from '../../data/layouts'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -26,9 +27,13 @@ export function AbaAjuste() {
   const esvaziar = useColagemStore((s) => s.esvaziarLamina)
   const alternarPermitirReduzir = useColagemStore((s) => s.alternarPermitirReduzir)
   const definirEspacamento = useColagemStore((s) => s.definirEspacamento)
+  const definirContorno = useColagemStore((s) => s.definirContorno)
   const girarImagem = useColagemStore((s) => s.girarImagem)
 
   const { slots, gap, margem } = lamina
+  // Só os layouts sobrepostos trazem contorno — é neles que o controle faz sentido.
+  const contornoPadrao = layoutPorId(lamina.layoutId)?.contorno
+  const contorno = lamina.contorno ?? contornoPadrao ?? 0
   const slot = slots.find((s) => s.slotId === slotSelecionado)
   const indice = slots.findIndex((s) => s.slotId === slotSelecionado) + 1
   const minimo = permitirReduzir ? 0.3 : 1
@@ -144,6 +149,21 @@ export function AbaAjuste() {
               onValueChange={([v]) => definirEspacamento(gap, v)}
             />
           </Controle>
+
+          {contornoPadrao !== undefined && (
+            <Controle
+              rotulo="Borda das fotos de cima"
+              valor={contorno ? `${contorno} px` : 'sem borda'}
+            >
+              <Slider
+                min={0}
+                max={40}
+                step={2}
+                value={[contorno]}
+                onValueChange={([v]) => definirContorno(v)}
+              />
+            </Controle>
+          )}
 
           <div className="flex items-start gap-2.5">
             <Checkbox

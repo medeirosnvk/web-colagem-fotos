@@ -3,7 +3,7 @@ import { laminaAtiva, useColagemStore } from '../../store/useColagemStore'
 import { formatoPorId, ZONA_SEGURA_PX } from '../../data/formatos'
 import { layoutPorId } from '../../data/layouts'
 import { layoutEfetivo } from '../../lib/layoutEfetivo'
-import { quadrosDe, retanguloDoSlot } from '../../lib/cover'
+import { contornosDosSlots, quadrosDe, retanguloDoSlot } from '../../lib/cover'
 import { SlotEditor } from './SlotEditor'
 import { centroVisivel } from '../../lib/areaVisivel'
 import type { Lamina } from '../../tipos'
@@ -51,7 +51,7 @@ export function TelaColagem({
   if (!formato || !layoutBase || !alvo) return null
 
   const slots = alvo.slots
-  const layout = layoutEfetivo(layoutBase, alvo.gap, alvo.margem)
+  const layout = layoutEfetivo(layoutBase, alvo.gap, alvo.margem, alvo.contorno)
   const quadros = quadrosDe(layout)
   const larguraTela = formato.largura * quadros
   const escala = Math.min(larguraMax / larguraTela, alturaMax / formato.altura)
@@ -62,6 +62,7 @@ export function TelaColagem({
   const retangulos = layout.slots.map((s) =>
     retanguloDoSlot(s, layout, larguraTela, formato.altura),
   )
+  const contornos = contornosDosSlots(layout, retangulos)
 
   return (
     <div
@@ -92,7 +93,7 @@ export function TelaColagem({
             imagem={imagens.find((img) => img.id === estado.imagemId)}
             escala={escala}
             interativo={interativo}
-            contorno={(layout.contorno ?? 0) * (formato.largura / 1080)}
+            contorno={contornos[i] * (formato.largura / 1080)}
             corFundo={corFundo}
           />
         )

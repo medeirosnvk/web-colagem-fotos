@@ -71,6 +71,7 @@ interface EstadoColagem extends Documento {
   /** Troca o layout da lâmina ativa e já põe cada foto no slot casado pela proporção. */
   aplicarSugestao: (layoutId: string, atribuicoes: { slotId: string; imagemId: string }[]) => void
   definirEspacamento: (gap: number, margem: number) => void
+  definirContorno: (contorno: number) => void
 
   atribuirImagem: (slotId: string, imagemId: string) => void
   usarImagem: (imagemId: string) => void
@@ -171,7 +172,7 @@ function migrarLayout(lamina: Lamina, layoutId: string): Partial<Lamina> {
     }
   })
 
-  return { layoutId, slots: novos, gap: layout.gap, margem: layout.margem }
+  return { layoutId, slots: novos, gap: layout.gap, margem: layout.margem, contorno: undefined }
 }
 
 /**
@@ -489,6 +490,7 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
           layoutId,
           gap: layout.gap,
           margem: layout.margem,
+          contorno: undefined,
           slots: slotsVazios(layoutId).map((slot) => ({
             ...slot,
             imagemId: porSlot.get(slot.slotId),
@@ -501,6 +503,12 @@ export const useColagemStore = create<EstadoColagem>((set, get) => {
       editar(
         (s) => naLaminaAtiva(s, (l) => (l.gap === gap && l.margem === margem ? null : { gap, margem })),
         'espacamento',
+      ),
+
+    definirContorno: (contorno) =>
+      editar(
+        (s) => naLaminaAtiva(s, (l) => (l.contorno === contorno ? null : { contorno })),
+        'contorno',
       ),
 
     atribuirImagem: (slotId, imagemId) =>
