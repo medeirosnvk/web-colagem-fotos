@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { AssinaturaKemle } from './AssinaturaKemle'
 
 function Miniatura({
   imagem,
@@ -336,9 +337,12 @@ export function BandejaImagens() {
 
       <ConteudoFotos />
 
-      <footer className="flex items-start gap-2 border-t px-4 py-3 text-xs leading-relaxed text-muted-foreground">
-        <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
-        Tudo roda no seu computador. Nenhuma imagem é enviada para a internet.
+      <footer className="border-t px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+        <p className="flex items-start gap-2">
+          <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-emerald-500" />
+          Tudo roda no seu computador. Nenhuma imagem é enviada para a internet.
+        </p>
+        <AssinaturaKemle className="mt-2 justify-start" />
       </footer>
     </aside>
   )

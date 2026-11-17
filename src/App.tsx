@@ -15,6 +15,7 @@ import { FaixaLaminas } from './componentes/PainelLaminas'
 import { AreaColagem } from './componentes/AreaColagem'
 import { PainelLateral } from './componentes/paineis/PainelLateral'
 import { PainelInferior } from './componentes/PainelInferior'
+import { AssinaturaKemle } from './componentes/AssinaturaKemle'
 import { useCompacto } from './lib/useCompacto'
 import { Logo } from './componentes/ui/Logo'
 import { BotaoIcone } from './componentes/ui/BotaoIcone'
@@ -149,6 +150,7 @@ export default function App() {
           <div className="flex min-h-0 flex-1 flex-col">
             <AreaColagem />
             <PainelInferior />
+            <AssinaturaKemle className="border-t py-1.5" />
           </div>
         ) : (
           <div className="flex min-h-0 flex-1">
